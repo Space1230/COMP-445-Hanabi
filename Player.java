@@ -165,6 +165,8 @@ public class Player {
 	 */
 	public String ask(int yourHandSize, Hand partnerHand, Board boardState) {
 		//If this is the start of the game and none of the hints have been used, check to see if there are any fives in your partner's hands and hint them to him
+		System.out.println("Hello");
+		System.out.println(boardState.tableau);
 		if (boardState.numHints == 8){
 			for (int i = 0;i < partnerHand.size();i++){
 				if (partnerHand.get(i).value == 5){
