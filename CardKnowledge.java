@@ -119,4 +119,22 @@ public class CardKnowledge {
         }
         return true;
     }
+
+    /**
+     * Retrieves the color of a card.
+     * @param card The card whose color is to be retrieved.
+     * @return The color of the card.
+     */
+    public int getColor(Card card) {
+        return card.color;
+    }
+
+    /**
+     * Retrieves the value of a card.
+     * @param card The card whose value is to be retrieved.
+     * @return The value of the card.
+     */
+    public int getValue(Card card) {
+        return card.value;
+    }
 }
