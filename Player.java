@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -12,11 +11,12 @@ public class Player {
 	public Player() {
 		myHand = new Hand();
 		knowledge = new CardKnowledge[5];
+		for (int i = 0; i < 5; i++) {
+			knowledge[i] = new CardKnowledge();
+		}
 		boardState = new Board();
 		hasColorHinted = new boolean[5];
-		Arrays.fill(hasColorHinted, false);
 		hasNumberHinted = new boolean[5];
-		Arrays.fill(hasNumberHinted, false);
 	}
 
 	/**
@@ -137,8 +137,7 @@ public class Player {
 	public void tellColorHint(int color, ArrayList<Integer> indices, Hand partnerHand, Board boardState) {
 		// If partner provided a color hint, update knowledge
 		for (Integer index : indices) {
-
-			//knowledge.knowColor(color);
+			knowledge[index].knowColor(color);
 		}
 	}
 
@@ -152,7 +151,7 @@ public class Player {
 	public void tellNumberHint(int number, ArrayList<Integer> indices, Hand partnerHand, Board boardState) {
 		// If partner provided a number hint, update knowledge
 		for (Integer index : indices) {
-			//knowledge.knowValue(number);
+			knowledge[index].knowValue(number);
 		}
 	}
 
@@ -191,6 +190,41 @@ public class Player {
 
 		// beginning of the game
 		if (precentage_of_non_empty_spaces < .5) {
+			// Going to Use Color Hint
+			int color;
+			// the goal: ensure only there is only one card in the
+			// deck with one color
+			//
+			// this is indexed by the color
+			// if a card has not been here before (the item is -1),
+			//     it sets the item to its index in the deck
+			// if a card sees that another card has set its
+			//     index, then it knows that the entry is invalid
+			//     and sets it to a -2
+			int num_color[] = new int[5];
+			Arrays.fill(num_color, -1);
+			for (int i = 0; i < 5; i++) { // searching for hint
+				color = knowledge[i].getKnownColor();
+				if (knowledge[i].hasBeenHinted &&
+						color != 1 &&
+						num_color[color] != -2) { // if color hint
+
+					if (num_color[color] != -1) {
+						num_color[color] = -2;
+					}
+					else {
+						num_color[color] = color;
+					}
+				}
+			}
+			int card_num;
+			for (int i = 0; i < 5; i++) {
+				if ((card_num = num_color[i]) > -1) {
+					return "PLAY " + card_num + " " + i;
+				}
+			}
+
+			// Going to Hint
 			boolean will_number_hint = false;
 			ArrayList<Integer> number_hint_indices = new ArrayList<Integer>();
 
@@ -229,11 +263,11 @@ public class Player {
 				}
 			}
 		}
-//		for (int i = 0;i < yourHandSize;i++){
-//			if (knowledge.getValue(myHand.get(i)) ==  5){
-//				return "DISCARD " + i + " " + i;
-//			}
-//		}
+		for (int i = 0;i < yourHandSize;i++){
+			// if (knowledge.getValue(myHand.get(i)) ==  5){
+			// 	return "DISCARD " + i + " " + i;
+			// }
+		}
 		return "DISCARD 0 0"; // Discard the first card in hand
 	}
 
