@@ -48,12 +48,16 @@ public class Player {
 			hasNumberHinted[disIndex] = false; // reset hints for new index
 			hasColorHinted[disIndex] = false; // reset hints for new index
 			// If the partner discarded a card, it means that card is not playable
-			//knowledge.eliminateCard(discard);
+			this.removeCardAndUpdateImpossible(boardState, discard, theirDeckKnowledge, theirImpossibleCards);
 		}
 		// If the partner drew a card, update knowledge
 		if (draw != null) {
 			// If the partner drew a card, add it to knowledge
-			//knowledge.eliminateCard(draw);
+			theirDeckKnowledge[disIndex] = new CardKnowledge(theirImpossibleCards);
+			theirDeckKnowledge[disIndex].eliminateNonPlayableOptions(boardState);
+		}
+		else {
+			theirDeckKnowledge[disIndex] = null;
 		}
 	}
 
@@ -69,12 +73,17 @@ public class Player {
 		// If you discarded a card, update knowledge
 		if (discard != null) {
 			// If you discarded a card, it means that card is not playable
-			//knowledge.eliminateCard(discard);
+			this.removeCardAndUpdateImpossible(boardState, discard, ourDeckKnowledge, ourImpossibleCards);
 		}
 		// If you drew a card, update knowledge
 		if (drawSucceeded) {
 			// If you drew a card, add it to knowledge
 			//knowledge.eliminateCard(boardState.discards.get(boardState.discards.size() - 1));
+			ourDeckKnowledge[disIndex] = new CardKnowledge(ourImpossibleCards);
+			ourDeckKnowledge[disIndex].eliminateNonPlayableOptions(boardState);
+		}
+		else {
+			ourDeckKnowledge[disIndex] = null;
 		}
 	}
 
