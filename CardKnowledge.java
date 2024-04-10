@@ -6,6 +6,7 @@ import java.util.Set;
  */
 public class CardKnowledge {
     private Set<Card> options;
+    boolean hasBeenHinted;
 
     /**
      * Allow all possible cards
@@ -20,6 +21,7 @@ public class CardKnowledge {
      */
     public CardKnowledge(Set<Card> impossibleCards) {
         options = new HashSet<>();
+        hasBeenHinted = false;
 
         for(int clr=Colors.MIN_COLOR; clr<=Colors.MAX_COLOR; clr++) {
             for (int val=Card.MIN_VALUE; val<=Card.MAX_VALUE; val++) {
@@ -37,10 +39,12 @@ public class CardKnowledge {
     }
 
     public void knowColor(int clr){
+        hasBeenHinted = true;
         options.removeIf(crd -> crd.color != clr);
     }
 
     public void knowValue(int val){
+        hasBeenHinted = true;
         options.removeIf(crd -> crd.value != val);
     }
 
