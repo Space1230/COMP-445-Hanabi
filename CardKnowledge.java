@@ -7,7 +7,6 @@ import java.util.Set;
 public class CardKnowledge {
     private Set<Card> options;
 
-
     /**
      * Allow all possible cards
      */
@@ -137,4 +136,5 @@ public class CardKnowledge {
     public int getValue(Card card) {
         return card.value;
     }
+
 }
