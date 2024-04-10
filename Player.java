@@ -1,19 +1,31 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.HashSet;
 
 public class Player {
 	private Hand myHand;
-	private CardKnowledge[] knowledge;
+	private CardKnowledge[] ourDeckKnowledge;
+	private Set<Card> ourImpossibleCards;
+	private CardKnowledge[] theirDeckKnowledge;
+	private Set<Card> theirImpossibleCards;
+
 	private Board boardState;
 	private boolean hasColorHinted[];
 	private boolean hasNumberHinted[];
 
 	public Player() {
 		myHand = new Hand();
-		knowledge = new CardKnowledge[5];
+
+		ourDeckKnowledge = new CardKnowledge[5];
+		theirDeckKnowledge = new CardKnowledge[5]; // TODO implement this
 		for (int i = 0; i < 5; i++) {
-			knowledge[i] = new CardKnowledge();
+			ourDeckKnowledge[i] = new CardKnowledge();
+			theirDeckKnowledge[i] = new CardKnowledge();
 		}
+		ourImpossibleCards = new HashSet<Card>();
+		theirImpossibleCards = new HashSet<Card>();
+
 		boardState = new Board();
 		hasColorHinted = new boolean[5];
 		hasNumberHinted = new boolean[5];
@@ -109,21 +121,27 @@ public class Player {
 	 */
 	public void tellYourPlay(Card play, int playIndex, int drawIndex, boolean drawSucceeded,
 							 boolean wasLegalPlay, Board boardState) {
-		// If you played a card, update knowledge
 		if (play != null) {
 			if (wasLegalPlay) {
 				// If you played a card legally, update knowledge
-				//knowledge.eliminateCard(play);
+				for (CardKnowledge knowledge : ourDeckKnowledge) {
+					knowledge.eliminateCard(play);
+				}
 			} else {
 				// If you played a card illegally, it must have been discarded
-				//knowledge.eliminateCard(play);
 			}
+			this.removeCardAndUpdateImpossible(boardState, play, ourDeckKnowledge, ourImpossibleCards);
+
 		}
 		// If you drew a card, update knowledge
 		if (drawSucceeded) {
 			// If you drew a card, add it to knowledge
-			//knowledge.eliminateCard(boardState.discards.get(boardState.discards.size() - 1));
-			//knowledge.eliminateCard(play);
+			ourDeckKnowledge[playIndex] = new CardKnowledge(ourImpossibleCards);
+			ourDeckKnowledge[playIndex].eliminateNonPlayableOptions(boardState);
+		}
+		else {
+			ourDeckKnowledge[playIndex] = null; // this will break stuff,
+												// but that is good for updating stuff
 		}
 	}
 
@@ -137,7 +155,7 @@ public class Player {
 	public void tellColorHint(int color, ArrayList<Integer> indices, Hand partnerHand, Board boardState) {
 		// If partner provided a color hint, update knowledge
 		for (Integer index : indices) {
-			knowledge[index].knowColor(color);
+			ourDeckKnowledge[index].knowColor(color);
 		}
 	}
 
@@ -151,7 +169,7 @@ public class Player {
 	public void tellNumberHint(int number, ArrayList<Integer> indices, Hand partnerHand, Board boardState) {
 		// If partner provided a number hint, update knowledge
 		for (Integer index : indices) {
-			knowledge[index].knowValue(number);
+			ourDeckKnowledge[index].knowValue(number);
 		}
 	}
 
@@ -176,9 +194,8 @@ public class Player {
 	 *     his cards have that color, or if no hints remain. This command consumes a hint.
 	 *
 	 * Andy's Ideas for what we should do
-	 * + discard from the right
-	 * + if there are any 1's at the beginning, hint at the color
-	 *   - if at the beginning, just play color hinted cards if only one
+	 * + need to have proper card tracking stuff
+	 *   - we need to add items
 	 * + only hint if card is valuable
 	 *   - try to choose color or number based on what is avaliable
 	 *   - don't care the cards at the beginning unless there is only one
@@ -204,22 +221,36 @@ public class Player {
 			int num_color[] = new int[5];
 			Arrays.fill(num_color, -1);
 			for (int i = 0; i < 5; i++) { // searching for hint
-				color = knowledge[i].getKnownColor();
-				if (knowledge[i].hasBeenHinted &&
-					color != 1 &&
-					num_color[color] != -2) { // if color hint
+				color = ourDeckKnowledge[i].getKnownColor();
+				if (ourDeckKnowledge[i].hasBeenHinted && color != -1) { // if color hint
+					if (num_color[color] != -2) { // unique color
+						if (num_color[color] != -1) {
+							num_color[color] = -2;
+						}
+						else {
+							num_color[color] = color;
+						}
+					}
+					else { // check to see if we know the number too
+						int value = ourDeckKnowledge[i].getKnownValue();
+						if (value != -1) {
+							Card card = new Card(color, value);
+							if (boardState.isLegalPlay(card)){
+								return "PLAY " + i + " " + color;
+							}
+							else {
+								return "DISCARD " + i + " " + i;
+							}
+						}
+					}
 
-					if (num_color[color] != -1) {
-						num_color[color] = -2;
-					}
-					else {
-						num_color[color] = color;
-					}
 				}
 			}
 			int card_num;
+			System.out.println("num_color: " + num_color.toString());
 			for (int i = 0; i < 5; i++) {
 				if ((card_num = num_color[i]) > -1) {
+					System.out.println("PLAY " + card_num + " " + i);
 					return "PLAY " + card_num + " " + i;
 				}
 			}
@@ -304,4 +335,25 @@ public class Player {
 		return matches;
 	}
 
+	// call this method when you remove a card.
+	//
+	// It handles removing the card if all the cards in the
+	// group are known
+	public void removeCardAndUpdateImpossible(Board boardState, Card card,
+											  CardKnowledge knowledge[],
+											  Set<Card> impossibleCards) {
+		int[] avaliable_cards = { 3, 2, 2, 2, 1 };
+		int matches = 0;
+		for (Card discard : boardState.discards) {
+			if (discard == card) {
+				matches++;
+			}
+		}
+		if (matches > avaliable_cards[card.value - 1]) {
+			for (CardKnowledge know : knowledge) { // inefficent, but works
+				know.eliminateCard(card);
+			}
+			impossibleCards.add(card);
+		}
+	}
 }
