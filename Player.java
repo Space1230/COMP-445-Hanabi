@@ -224,7 +224,6 @@ public class Player {
 		// beginning of the game
 		if (precentage_of_non_empty_spaces < .5) {
 			// Going to Use Color Hint
-			int color;
 			// the goal: ensure only there is only one card in the
 			// deck with one color
 			//
@@ -237,18 +236,17 @@ public class Player {
 			int num_color[] = new int[5];
 			Arrays.fill(num_color, -1);
 			for (int i = 0; i < 5; i++) { // searching for hint
-				color = ourDeckKnowledge[i].getKnownColor();
+				int color = ourDeckKnowledge[i].getKnownColor();
+				int value = ourDeckKnowledge[i].getKnownValue();
 				if (ourDeckKnowledge[i].hasBeenHinted && color != -1) { // if color hint
 					if (num_color[color] != -2) { // unique color
 						if (num_color[color] != -1) {
 							num_color[color] = -2;
 						}
 						else {
-							num_color[color] = color;
+							num_color[color] = i;
 						}
-					}
-					else { // check to see if we know the number too
-						int value = ourDeckKnowledge[i].getKnownValue();
+						// check to see if we know the number too
 						if (value != -1) {
 							Card card = new Card(color, value);
 							if (boardState.isLegalPlay(card)){
@@ -259,11 +257,13 @@ public class Player {
 							}
 						}
 					}
-
 				}
 			}
 			int card_num;
-			System.out.println("num_color: " + num_color.toString());
+			System.out.print("num_color: ");
+			for (int num : num_color) {
+				System.out.println(num);
+			}
 			for (int i = 0; i < 5; i++) {
 				if ((card_num = num_color[i]) > -1) {
 					System.out.println("PLAY " + card_num + " " + i);
@@ -278,7 +278,8 @@ public class Player {
 			for (int i = 0; i < partnerHand.size(); i++) {
 				Card card = partnerHand.get(i);
 				// checking to see if it is a 1, no other color matches, and hint hasn't been given before
-				if (card.value == 1 && countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) {
+				if (card.value == 1 &&
+					(countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i])  {
 					hasColorHinted[i] = true; // this card has been hinted at
 					return "COLORHINT " + card.color;
 				}
@@ -306,7 +307,7 @@ public class Player {
 		if (boardState.numHints == 8){
 			for (int i = 0;i < partnerHand.size();i++){
 				if (partnerHand.get(i).value == 5){
-					return "NUMBERHINT 5";
+					//return "NUMBERHINT 5";
 				}
 			}
 		}
