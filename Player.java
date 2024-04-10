@@ -1,6 +1,9 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
+
+import javax.print.event.PrintJobListener;
+
 import java.util.HashSet;
 
 public class Player {
@@ -238,6 +241,7 @@ public class Player {
 			for (int i = 0; i < 5; i++) { // searching for hint
 				int color = ourDeckKnowledge[i].getKnownColor();
 				int value = ourDeckKnowledge[i].getKnownValue();
+				// check to see if we know the color
 				if (ourDeckKnowledge[i].hasBeenHinted && color != -1) { // if color hint
 					if (num_color[color] != -2) { // unique color
 						if (num_color[color] != -1) {
@@ -259,15 +263,14 @@ public class Player {
 					}
 				}
 			}
-			int card_num;
-			System.out.print("num_color: ");
-			for (int num : num_color) {
-				System.out.println(num);
-			}
+			int card_index;
 			for (int i = 0; i < 5; i++) {
-				if ((card_num = num_color[i]) > -1) {
-					System.out.println("PLAY " + card_num + " " + i);
-					return "PLAY " + card_num + " " + i;
+				if ((card_index = num_color[i]) > -1) {
+					// check to see if the play is valid
+					if (ourDeckKnowledge[card_index].options.contains(new Card(i, 1))) {
+						System.out.println("PLAY " + card_index + " " + i);
+						return "PLAY " + card_index + " " + i;
+					}
 				}
 			}
 
@@ -316,6 +319,7 @@ public class Player {
 			// 	return "DISCARD " + i + " " + i;
 			// }
 		}
+
 		return "DISCARD 0 0"; // Discard the first card in hand
 	}
 

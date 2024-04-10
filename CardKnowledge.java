@@ -5,7 +5,7 @@ import java.util.Set;
  * Tracks possible values for one unknown card
  */
 public class CardKnowledge {
-    private Set<Card> options;
+    public Set<Card> options;
     boolean hasBeenHinted;
 
     /**
