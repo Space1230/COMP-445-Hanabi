@@ -97,16 +97,23 @@ public class Player {
 			hasNumberHinted[playIndex] = false; // reset hints for new index
 			if (wasLegalPlay) {
 				// If the partner played a card legally, update knowledge
-				//knowledge.eliminateCard(play);
+				for (CardKnowledge knowledge : theirDeckKnowledge) {
+					knowledge.eliminateCard(draw);
+				}
 			} else {
 				// If the partner played a card illegally, it must have been discarded
 				//knowledge.eliminateCard(play);
 			}
+			this.removeCardAndUpdateImpossible(boardState, draw, theirDeckKnowledge, theirImpossibleCards);
 		}
 		// If the partner drew a card, update knowledge
 		if (draw != null) {
 			// If the partner drew a card, add it to knowledge
-			//knowledge.eliminateCard(draw);
+			theirDeckKnowledge[playIndex] = new CardKnowledge(theirImpossibleCards);
+			theirDeckKnowledge[playIndex].eliminateNonPlayableOptions(boardState);
+		}
+		else {
+			ourDeckKnowledge[playIndex] = null;
 		}
 	}
 
