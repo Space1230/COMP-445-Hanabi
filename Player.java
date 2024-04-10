@@ -3,14 +3,14 @@ import java.util.Arrays;
 
 public class Player {
 	private Hand myHand;
-	private CardKnowledge knowledge;
+	private CardKnowledge[] knowledge;
 	private Board boardState;
 	private boolean hasColorHinted[];
 	private boolean hasNumberHinted[];
 
 	public Player() {
 		myHand = new Hand();
-		knowledge = new CardKnowledge();
+		knowledge = new CardKnowledge[5];
 		boardState = new Board();
 		hasColorHinted = new boolean[5];
 		Arrays.fill(hasColorHinted, false);
@@ -35,12 +35,12 @@ public class Player {
 			hasNumberHinted[disIndex] = false; // reset hints for new index
 			hasColorHinted[disIndex] = false; // reset hints for new index
 			// If the partner discarded a card, it means that card is not playable
-			knowledge.eliminateCard(discard);
+			//knowledge.eliminateCard(discard);
 		}
 		// If the partner drew a card, update knowledge
 		if (draw != null) {
 			// If the partner drew a card, add it to knowledge
-			knowledge.eliminateCard(draw);
+			//knowledge.eliminateCard(draw);
 		}
 	}
 
@@ -56,12 +56,12 @@ public class Player {
 		// If you discarded a card, update knowledge
 		if (discard != null) {
 			// If you discarded a card, it means that card is not playable
-			knowledge.eliminateCard(discard);
+			//knowledge.eliminateCard(discard);
 		}
 		// If you drew a card, update knowledge
 		if (drawSucceeded) {
 			// If you drew a card, add it to knowledge
-			knowledge.eliminateCard(boardState.discards.get(boardState.discards.size() - 1));
+			//knowledge.eliminateCard(boardState.discards.get(boardState.discards.size() - 1));
 		}
 	}
 
@@ -84,16 +84,16 @@ public class Player {
 			hasNumberHinted[playIndex] = false; // reset hints for new index
 			if (wasLegalPlay) {
 				// If the partner played a card legally, update knowledge
-				knowledge.eliminateCard(play);
+				//knowledge.eliminateCard(play);
 			} else {
 				// If the partner played a card illegally, it must have been discarded
-				knowledge.eliminateCard(play);
+				//knowledge.eliminateCard(play);
 			}
 		}
 		// If the partner drew a card, update knowledge
 		if (draw != null) {
 			// If the partner drew a card, add it to knowledge
-			knowledge.eliminateCard(draw);
+			//knowledge.eliminateCard(draw);
 		}
 	}
 
@@ -112,17 +112,17 @@ public class Player {
 		if (play != null) {
 			if (wasLegalPlay) {
 				// If you played a card legally, update knowledge
-				knowledge.eliminateCard(play);
+				//knowledge.eliminateCard(play);
 			} else {
 				// If you played a card illegally, it must have been discarded
-				knowledge.eliminateCard(play);
+				//knowledge.eliminateCard(play);
 			}
 		}
 		// If you drew a card, update knowledge
 		if (drawSucceeded) {
 			// If you drew a card, add it to knowledge
 			//knowledge.eliminateCard(boardState.discards.get(boardState.discards.size() - 1));
-			knowledge.eliminateCard(play);
+			//knowledge.eliminateCard(play);
 		}
 	}
 
@@ -136,7 +136,8 @@ public class Player {
 	public void tellColorHint(int color, ArrayList<Integer> indices, Hand partnerHand, Board boardState) {
 		// If partner provided a color hint, update knowledge
 		for (Integer index : indices) {
-			knowledge.knowColor(color);
+
+			//knowledge.knowColor(color);
 		}
 	}
 
@@ -186,6 +187,7 @@ public class Player {
 	public String ask(int yourHandSize, Hand partnerHand, Board boardState) {
 		//If this is the start of the game and none of the hints have been used, check to see if there are any fives in your partner's hands and hint them to him
 		double precentage_of_non_empty_spaces = getPercentageOfNonEmptySpaces(boardState);
+
 		// beginning of the game
 		if (precentage_of_non_empty_spaces < .5) {
 			boolean will_number_hint = false;
