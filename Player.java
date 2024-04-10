@@ -1,9 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
-
-import javax.print.event.PrintJobListener;
-
 import java.util.HashSet;
 
 public class Player {
@@ -225,7 +222,7 @@ public class Player {
 		double precentage_of_non_empty_spaces = getPercentageOfNonEmptySpaces(boardState);
 
 		// beginning of the game
-		if (precentage_of_non_empty_spaces < .5) {
+		if (precentage_of_non_empty_spaces < 1) {
 			// Going to Use Color Hint
 			// the goal: ensure only there is only one card in the
 			// deck with one color
@@ -303,7 +300,14 @@ public class Player {
 			// discard the rightmost card
 			// probably wrong syntax
 			else {
-				return "DISCARD 4 4";
+				for (int i = 4; i > -1; i--) {
+					if (!ourDeckKnowledge[i].hasBeenHinted) {
+						return "DISCARD " + i + " " + i;
+					}
+				}
+
+				// when reach end, need to determine most important
+				// card to keep
 			}
 		}
 
