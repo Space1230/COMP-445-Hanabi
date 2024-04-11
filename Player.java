@@ -235,7 +235,7 @@ public class Player {
 							false);
 					int importantIndex = -1;
 					Card importantCard = null;
-					if (rightmostCardIsImportant || leftCardIsImportant) {
+					if ((rightmostCardIsImportant || leftCardIsImportant) && boardState.numHints != 0) {
 						if (rightmostCard.value >= leftCard.value ||
 								(rightmostCardIsImportant && !leftCardIsImportant)) {
 							importantIndex = discardIndex;
@@ -247,7 +247,7 @@ public class Player {
 						}
 
 						// use a number hint unless it is immediately playable
-						if (this.cardIsImmediatelyPlayable(leftCard, boardState)){
+						if (this.cardIsImmediatelyPlayable(leftCard, boardState) && boardState.numHints >= 4){
 							this.hasColorHinted[importantIndex] = true;
 							return "COLORHINT " + importantCard.value;
 						}
@@ -288,12 +288,13 @@ public class Player {
 					if (value == 1) {
 						Card card = new Card(color, value);
 						if (boardState.isLegalPlay(card)){
-							return "PLAY " + i + " " + color;
+							return "PLAY " + i + " " + i;
 						}
 						else {
 							return "DISCARD " + i + " " + i;
 						}
 					}
+
 				}
 			}
 			int card_index;
@@ -302,7 +303,7 @@ public class Player {
 					// check to see if the play is valid
 					if (ourDeckKnowledge[card_index].options
 							.contains(new Card(i, 1))) {
-						return "PLAY " + card_index + " " + i;
+						return "PLAY " + card_index + " " + card_index;
 					}
 				}
 			}
@@ -316,7 +317,7 @@ public class Player {
 				Card card = partnerHand.get(i);
 				// checking to see if it is a 1, no other color matches, and hint hasn't been given before
 				if (card.value == 1 &&
-						(countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i] && boardState.numHints != 0)  {
+						(countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i] && boardState.numHints >= 4 && (boardState.tableau.get(card.color) == card.value - 1))  {
 					hasColorHinted[i] = true; // this card has been hinted at
 					return "COLORHINT " + card.color;
 				}
@@ -327,7 +328,7 @@ public class Player {
 				}
 			}
 			// hint all 1's and add them to the number hinted array
-			if (will_number_hint && boardState.numHints != 0) {
+			if (will_number_hint && boardState.numHints >= 4) {
 				for (int index : number_hint_indices) {
 					hasNumberHinted[index] = true;
 				}

@@ -5,6 +5,9 @@ public class Driver {
 		// Hanabi game = new Hanabi(true, new ConsolePlayer(), new ConsolePlayer());
 		Hanabi game = new Hanabi(true, new Player(), new Player());
 		game.play();
+
+//		double average_score = simulateGames(1000,false);
+//		System.out.println("The average score is: " + average_score);
 	}
 
 	/**
