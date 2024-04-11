@@ -220,44 +220,8 @@ public class Player {
 
 		// beginning of the game
 		if (precentage_of_non_empty_spaces < 1) {
-			// TODO hint if rightmost item important
-			int discardIndex = this.getPartnerDiscardIndex();
-			Card rightmostCard = partnerHand.get(discardIndex);
-			boolean rightmostCardIsImportant = this.cardIsImportant(boardState,
-																 rightmostCard,
-																 false);
-			if (rightmostCard.value == 1 || rightmostCardIsImportant) {
-				// check if the left card has more priority
-				if (discardIndex > 0) { // valid left card
-					Card leftCard = partnerHand.get(discardIndex - 1);
-					boolean leftCardIsImportant = this.cardIsImportant(boardState,
-																 leftCard,
-																 false);
-					int importantIndex = -1;
-					Card importantCard = null;
-					if (rightmostCardIsImportant || leftCardIsImportant) {
-						if (rightmostCard.value >= leftCard.value ||
-							(rightmostCardIsImportant && !leftCardIsImportant)) {
-							importantIndex = discardIndex;
-							importantCard = rightmostCard;
-						}
-						else {
-							importantIndex = discardIndex - 1;
-							importantCard = leftCard;
-						}
-
-						// use a number hint unless it is immediately playable
-						if (this.cardIsImmediatelyPlayable(leftCard, boardState)){
-							this.hasColorHinted[importantIndex] = true;
-							return "COLORHINT " + importantCard.value;
-						}
-						else {
-							this.hasNumberHinted[importantIndex] = true;
-							return "NUMBERHINT " + importantCard.value;
-						}
-					}
-				}
-			}
+			String result = this.hintDiscard(partnerHand, boardState);
+			if (result != null) {return result;}
 
 			// Going to Use Color Hint
 			// the goal: ensure only there is only one card in the
@@ -318,6 +282,9 @@ public class Player {
 				if (card.value == 1 &&
 					(countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i])  {
 					hasColorHinted[i] = true; // this card has been hinted at
+
+					// will be extracted to function
+
 					return "COLORHINT " + card.color;
 				}
 				// will do a number hint; doesn't make sense if already done
@@ -356,13 +323,54 @@ public class Player {
 				}
 			}
 		}
-		for (int i = 0;i < yourHandSize;i++){
+		for (int i = 0; i < yourHandSize; i++){
 			// if (knowledge.getValue(myHand.get(i)) ==  5){
 			// 	return "DISCARD " + i + " " + i;
 			// }
 		}
 
 		return "DISCARD 0 0"; // Discard the first card in hand
+	}
+
+	public String hintDiscard(Hand partnerHand, Board boardState) {
+		int discardIndex = this.getPartnerDiscardIndex();
+		Card rightmostCard = partnerHand.get(discardIndex);
+		boolean rightmostCardIsImportant = this.cardIsImportant(boardState,
+																rightmostCard,
+																false);
+		if (rightmostCard.value == 1 || rightmostCardIsImportant) {
+			// check if the left card has more priority
+			if (discardIndex > 0) { // valid left card
+				Card leftCard = partnerHand.get(discardIndex - 1);
+				boolean leftCardIsImportant = this.cardIsImportant(boardState,
+																leftCard,
+																false);
+				int importantIndex = -1;
+				Card importantCard = null;
+				if (rightmostCardIsImportant) {
+					if (rightmostCard.value >= leftCard.value ||
+						(rightmostCardIsImportant && !leftCardIsImportant)) {
+						importantIndex = discardIndex;
+						importantCard = rightmostCard;
+					}
+					else {
+						importantIndex = discardIndex - 1;
+						importantCard = leftCard;
+					}
+
+					// use a number hint unless it is immediately playable
+					if (this.cardIsImmediatelyPlayable(leftCard, boardState)){
+						this.hasColorHinted[importantIndex] = true;
+						return "COLORHINT " + importantCard.color;
+					}
+					else {
+						this.hasNumberHinted[importantIndex] = true;
+						return "NUMBERHINT " + importantCard.value;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
     public double getPercentageOfNonEmptySpaces(Board boardState) {
@@ -465,4 +473,25 @@ public class Player {
 		return currentPlayedCard + 1 == card.value;
 	}
 
+	// if colorhint: supply color number to hintIdentifier
+	// if numberhint: supply number to hintIdentifier
+	public boolean shouldHint(Board boardState, Hand partnerHand,
+							  int hintIdentifier, boolean isColorHint) {
+		int discardIndex = this.getPartnerDiscardIndex();
+		for (int index = discardIndex; index > -1; index--) {
+			Card toCheck = partnerHand.get(index);
+			boolean cardIsNotSameAsHint =
+				(isColorHint) ?(toCheck.color != hintIdentifier)
+				              :(toCheck.value != hintIdentifier);
+			// ensure multiple hints don't end on an important card
+			// this should run on the new discardIndex
+			if (cardIsNotSameAsHint) {
+				if (this.cardIsImportant(boardState, toCheck, false)){
+					return false;
+				}
+				return true;
+			}
+		}
+		return true;
+	}
 }
