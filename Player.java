@@ -54,11 +54,10 @@ public class Player {
 		if (draw != null) {
 			// If the partner drew a card, add it to knowledge
 			theirDeckKnowledge[disIndex] = new CardKnowledge(theirImpossibleCards);
-			theirDeckKnowledge[disIndex].eliminateNonPlayableOptions(boardState);
+			//theirDeckKnowledge[disIndex].eliminateNonPlayableOptions(boardState);
 		}
 		else {
 			assert false;
-			theirDeckKnowledge[disIndex] = null;
 		}
 	}
 
@@ -81,11 +80,9 @@ public class Player {
 			// If you drew a card, add it to knowledge
 			//knowledge.eliminateCard(boardState.discards.get(boardState.discards.size() - 1));
 			ourDeckKnowledge[disIndex] = new CardKnowledge(ourImpossibleCards);
-			ourDeckKnowledge[disIndex].eliminateNonPlayableOptions(boardState);
 		}
 		else {
 			assert false;
-			ourDeckKnowledge[disIndex] = null;
 		}
 	}
 
@@ -121,11 +118,10 @@ public class Player {
 		if (draw != null) {
 			// If the partner drew a card, add it to knowledge
 			theirDeckKnowledge[playIndex] = new CardKnowledge(theirImpossibleCards);
-			theirDeckKnowledge[playIndex].eliminateNonPlayableOptions(boardState);
+			//theirDeckKnowledge[playIndex].eliminateNonPlayableOptions(boardState);
 		}
 		else {
 			assert false;
-			ourDeckKnowledge[playIndex] = null;
 		}
 	}
 
@@ -144,7 +140,10 @@ public class Player {
 			if (wasLegalPlay) {
 				// If you played a card legally, update knowledge
 				for (CardKnowledge knowledge : ourDeckKnowledge) {
+					//System.out.println("O Options: " + knowledge.options);
 					knowledge.eliminateCard(play);
+					//System.out.println("N Options: " + knowledge.options);
+					ourImpossibleCards.add(play);
 				}
 			} else {
 				// If you played a card illegally, it must have been discarded
@@ -156,12 +155,10 @@ public class Player {
 		if (drawSucceeded) {
 			// If you drew a card, add it to knowledge
 			ourDeckKnowledge[playIndex] = new CardKnowledge(ourImpossibleCards);
-			ourDeckKnowledge[playIndex].eliminateNonPlayableOptions(boardState);
+
 		}
 		else {
 			assert false;
-			ourDeckKnowledge[playIndex] = null; // this will break stuff,
-												// but that is good for updating stuff
 		}
 	}
 
@@ -175,7 +172,14 @@ public class Player {
 	public void tellColorHint(int color, ArrayList<Integer> indices, Hand partnerHand, Board boardState) {
 		// If partner provided a color hint, update knowledge
 		for (Integer index : indices) {
+			int knownColor = ourDeckKnowledge[index].getKnownColor();
+			if (knownColor != -1) {
+				//System.out.println("Known Color: " + knownColor);
+				//System.out.println("Color to get rid of: " + color);
+			}
+			if (knownColor == color) {continue;}
 			ourDeckKnowledge[index].knowColor(color);
+			//System.out.println("N DKC: " + ourDeckKnowledge[index]);
 		}
 	}
 
@@ -189,6 +193,8 @@ public class Player {
 	public void tellNumberHint(int number, ArrayList<Integer> indices, Hand partnerHand, Board boardState) {
 		// If partner provided a number hint, update knowledge
 		for (Integer index : indices) {
+			int knownNumber = ourDeckKnowledge[index].getKnownValue();
+			if (knownNumber == number) {continue;}
 			ourDeckKnowledge[index].knowValue(number);
 		}
 	}
@@ -309,7 +315,6 @@ public class Player {
 					// check to see if the play is valid
 					if (ourDeckKnowledge[card_index].options
 						.contains(new Card(i, 1))) {
-						System.out.println("PLAY " + card_index + " " + i);
 						return "PLAY " + card_index + " " + i;
 					}
 				}
@@ -355,6 +360,7 @@ public class Player {
 				// card to keep
 			}
 		}
+		assert false;
 
 		if (boardState.numHints == 8){
 			for (int i = 0;i < partnerHand.size();i++){
@@ -424,8 +430,11 @@ public class Player {
 											  Set<Card> impossibleCards) {
 		int[] avaliable_cards = { 3, 2, 2, 2, 1 };
 		int matches = discardMatches(boardState, card);
-		if (matches > avaliable_cards[card.value - 1]) {
+		if (matches > avaliable_cards[card.value - 1]) { // TODO fix
 			for (CardKnowledge know : knowledge) { // inefficent, but works
+				// check to see if only card
+				Card existingCard = new Card(know.getKnownColor(), know.getKnownValue());
+				if (existingCard == card) {continue;}
 				know.eliminateCard(card);
 			}
 			impossibleCards.add(card);
@@ -452,6 +461,7 @@ public class Player {
 				return i;
 			}
 		}
+
 		assert false; // TODO implement this later
 		return 0;
 	}

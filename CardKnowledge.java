@@ -70,6 +70,7 @@ public class CardKnowledge {
      * @return the color of the card, or -1 if it could be more than one color
      */
     public int getKnownColor() {
+        if (options.isEmpty()) {return -1;}
         int color = options.iterator().next().color;
 
         for (Card crd : options) {
@@ -85,6 +86,7 @@ public class CardKnowledge {
      * @return the value of the card, or -1 if it could be more than one value
      */
     public int getKnownValue() {
+        if (options.isEmpty()) {return -1;}
         int val = options.iterator().next().value;
 
         for (Card crd : options) {
