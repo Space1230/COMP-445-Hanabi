@@ -252,7 +252,7 @@ public class Player {
 					if (value == 1) {
 						Card card = new Card(color, value);
 						if (boardState.isLegalPlay(card)){
-							return "PLAY " + i + " " + color;
+							return "PLAY " + i + " " + i;
 						}
 						else {
 							return "DISCARD " + i + " " + i;
@@ -266,7 +266,7 @@ public class Player {
 					// check to see if the play is valid
 					if (ourDeckKnowledge[card_index].options
 						.contains(new Card(i, 1))) {
-						return "PLAY " + card_index + " " + i;
+						return "PLAY " + card_index + " " + card_index;
 					}
 				}
 			}
@@ -294,7 +294,7 @@ public class Player {
 				}
 			}
 			// hint all 1's and add them to the number hinted array
-			if (will_number_hint) {
+			if (will_number_hint && boardState.numHints >= 4) {
 				for (int index : number_hint_indices) {
 					hasNumberHinted[index] = true;
 				}
@@ -373,16 +373,16 @@ public class Player {
 		return null;
 	}
 
-    public double getPercentageOfNonEmptySpaces(Board boardState) {
-        int number_of_non_empty_spaces = 0;
-        for (Integer card : boardState.tableau) {
-            if (card > 0) {
-                number_of_non_empty_spaces++;
-            }
-        }
+	public double getPercentageOfNonEmptySpaces(Board boardState) {
+		int number_of_non_empty_spaces = 0;
+		for (Integer card : boardState.tableau) {
+			if (card > 0) {
+				number_of_non_empty_spaces++;
+			}
+		}
 
-        return (double)number_of_non_empty_spaces/(double)boardState.tableau.size();
-    }
+		return (double)number_of_non_empty_spaces/(double)boardState.tableau.size();
+	}
 
 	public int countColorMatches(Card card, Hand hand) {
 		int matches = 0;
