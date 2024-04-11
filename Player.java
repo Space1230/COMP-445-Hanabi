@@ -118,7 +118,6 @@ public class Player {
 		if (draw != null) {
 			// If the partner drew a card, add it to knowledge
 			theirDeckKnowledge[playIndex] = new CardKnowledge(theirImpossibleCards);
-			//theirDeckKnowledge[playIndex].eliminateNonPlayableOptions(boardState);
 		}
 		else {
 			assert false;
@@ -140,9 +139,7 @@ public class Player {
 			if (wasLegalPlay) {
 				// If you played a card legally, update knowledge
 				for (CardKnowledge knowledge : ourDeckKnowledge) {
-					//System.out.println("O Options: " + knowledge.options);
 					knowledge.eliminateCard(play);
-					//System.out.println("N Options: " + knowledge.options);
 					ourImpossibleCards.add(play);
 				}
 			} else {
@@ -155,7 +152,6 @@ public class Player {
 		if (drawSucceeded) {
 			// If you drew a card, add it to knowledge
 			ourDeckKnowledge[playIndex] = new CardKnowledge(ourImpossibleCards);
-
 		}
 		else {
 			assert false;
@@ -172,14 +168,7 @@ public class Player {
 	public void tellColorHint(int color, ArrayList<Integer> indices, Hand partnerHand, Board boardState) {
 		// If partner provided a color hint, update knowledge
 		for (Integer index : indices) {
-			int knownColor = ourDeckKnowledge[index].getKnownColor();
-			if (knownColor != -1) {
-				//System.out.println("Known Color: " + knownColor);
-				//System.out.println("Color to get rid of: " + color);
-			}
-			if (knownColor == color) {continue;}
 			ourDeckKnowledge[index].knowColor(color);
-			//System.out.println("N DKC: " + ourDeckKnowledge[index]);
 		}
 	}
 
@@ -193,8 +182,6 @@ public class Player {
 	public void tellNumberHint(int number, ArrayList<Integer> indices, Hand partnerHand, Board boardState) {
 		// If partner provided a number hint, update knowledge
 		for (Integer index : indices) {
-			int knownNumber = ourDeckKnowledge[index].getKnownValue();
-			if (knownNumber == number) {continue;}
 			ourDeckKnowledge[index].knowValue(number);
 		}
 	}
@@ -432,9 +419,6 @@ public class Player {
 		int matches = discardMatches(boardState, card);
 		if (matches > avaliable_cards[card.value - 1]) { // TODO fix
 			for (CardKnowledge know : knowledge) { // inefficent, but works
-				// check to see if only card
-				Card existingCard = new Card(know.getKnownColor(), know.getKnownValue());
-				if (existingCard == card) {continue;}
 				know.eliminateCard(card);
 			}
 			impossibleCards.add(card);
