@@ -223,96 +223,12 @@ public class Player {
 			String result = this.hintDiscard(partnerHand, boardState);
 			if (result != null) {return result;}
 
-			// Going to Use Color Hint
-			// the goal: ensure only there is only one card in the
-			// deck with one color
-			//
-			// this is indexed by the color
-			// if a card has not been here before (the item is -1),
-			//     it sets the item to its index in the deck
-			// if a card sees that another card has set its
-			//     index, then it knows that the entry is invalid
-			//     and sets it to a -2
-			int num_color[] = new int[5];
-			Arrays.fill(num_color, -1);
-			for (int i = 0; i < 5; i++) { // searching for hint
-				int color = ourDeckKnowledge[i].getKnownColor();
-				int value = ourDeckKnowledge[i].getKnownValue();
-				// check to see if we know the color
-				if (ourDeckKnowledge[i].hasBeenHinted && color != -1) { // if color hint
-					if (num_color[color] != -2) { // unique color
-						if (num_color[color] != -1) {
-							num_color[color] = -2;
-						}
-						else {
-							num_color[color] = i;
-						}
-					}
-					// check to see if we know the number too
-					if (value == 1) {
-						Card card = new Card(color, value);
-						if (boardState.isLegalPlay(card)){
-							return "PLAY " + i + " " + i;
-						}
-						else {
-							return "DISCARD " + i + " " + i;
-						}
-					}
-				}
-			}
-			int card_index;
-			for (int i = 0; i < 5; i++) {
-				if ((card_index = num_color[i]) > -1) {
-					// check to see if the play is valid
-					if (ourDeckKnowledge[card_index].options
-						.contains(new Card(i, 1))) {
-						return "PLAY " + card_index + " " + card_index;
-					}
-				}
-			}
+			result = this.play(boardState);
+			if (result != null) {return result;}
 
-			// Going to Hint
-			// TODO hint from right to left
-			boolean will_number_hint = false;
-			ArrayList<Integer> number_hint_indices = new ArrayList<Integer>();
+			result = this.hint(partnerHand, boardState);
+			if (result != null) {return result;}
 
-			for (int i = 0; i < partnerHand.size(); i++) {
-				Card card = partnerHand.get(i);
-				// checking to see if it is a 1, no other color matches, and hint hasn't been given before
-				if (card.value == 1 &&
-					(countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i])  {
-					hasColorHinted[i] = true; // this card has been hinted at
-
-					// will be extracted to function
-
-					return "COLORHINT " + card.color;
-				}
-				// will do a number hint; doesn't make sense if already done
-				else if (card.value == 1 && !hasNumberHinted[i]) {
-					will_number_hint = true;
-					number_hint_indices.add(i);
-				}
-			}
-			// hint all 1's and add them to the number hinted array
-			if (will_number_hint && boardState.numHints >= 4) {
-				for (int index : number_hint_indices) {
-					hasNumberHinted[index] = true;
-				}
-
-				return "NUMBERHINT 1";
-			}
-			// discard the rightmost card
-			// probably wrong syntax
-			else {
-				for (int i = 4; i > -1; i--) {
-					if (!ourDeckKnowledge[i].hasBeenHinted) {
-						return "DISCARD " + i + " " + i;
-					}
-				}
-
-				// when reach end, need to determine most important
-				// card to keep
-			}
 		}
 		assert false;
 
@@ -369,6 +285,102 @@ public class Player {
 					}
 				}
 			}
+		}
+		return null;
+	}
+
+	public String play(Board boardState){
+		int num_color[] = new int[5];
+		Arrays.fill(num_color, -1);
+		for (int i = 0; i < 5; i++) { // searching for hint
+			int color = ourDeckKnowledge[i].getKnownColor();
+			int value = ourDeckKnowledge[i].getKnownValue();
+			// check to see if we know the color
+			if (ourDeckKnowledge[i].hasBeenHinted && color != -1) { // if color hint
+				if (num_color[color] != -2) { // unique color
+					if (num_color[color] != -1) {
+						num_color[color] = -2;
+					}
+					else {
+						num_color[color] = i;
+					}
+				}
+				// check to see if we know the number too
+				if (value == 1) {
+					Card card = new Card(color, value);
+					if (boardState.isLegalPlay(card)){
+						return "PLAY " + i + " " + i;
+					}
+					else {
+						return "DISCARD " + i + " " + i;
+					}
+				}
+			}
+		}
+		int card_index;
+		for (int i = 0; i < 5; i++) {
+			if ((card_index = num_color[i]) > -1) {
+				// check to see if the play is valid
+				if (ourDeckKnowledge[card_index].options
+					.contains(new Card(i, 1))) {
+					return "PLAY " + card_index + " " + card_index;
+				}
+			}
+		}
+		return null;
+	}
+
+	public String hint(Hand partnerHand, Board boardState) {
+		// Going to Use Color Hint
+		// the goal: ensure only there is only one card in the
+		// deck with one color
+		//
+		// this is indexed by the color
+		// if a card has not been here before (the item is -1),
+		//     it sets the item to its index in the deck
+		// if a card sees that another card has set its
+		//     index, then it knows that the entry is invalid
+		//     and sets it to a -2
+		// Going to Hint
+		boolean will_number_hint = false;
+		ArrayList<Integer> number_hint_indices = new ArrayList<Integer>();
+
+		for (int i = 0; i < partnerHand.size(); i++) {
+			Card card = partnerHand.get(i);
+			// checking to see if it is a 1, no other color matches, and hint hasn't been given before
+			if (card.value == 1 &&
+				(countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i])  {
+				hasColorHinted[i] = true; // this card has been hinted at
+
+				// will be extracted to function
+
+				return "COLORHINT " + card.color;
+			}
+			// will do a number hint; doesn't make sense if already done
+			else if (card.value == 1 && !hasNumberHinted[i]) {
+				will_number_hint = true;
+				number_hint_indices.add(i);
+			}
+		}
+		// hint all 1's and add them to the number hinted array
+		if (will_number_hint && boardState.numHints >= 4) {
+			for (int index : number_hint_indices) {
+				hasNumberHinted[index] = true;
+			}
+
+			return "NUMBERHINT 1";
+		}
+		// discard the rightmost card
+		// probably wrong syntax
+		else {
+			for (int i = 4; i > -1; i--) {
+				if (!ourDeckKnowledge[i].hasBeenHinted) {
+					return "DISCARD " + i + " " + i;
+				}
+			}
+
+			// when reach end, need to determine most important
+			// card to keep
 		}
 		return null;
 	}
