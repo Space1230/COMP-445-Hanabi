@@ -216,15 +216,88 @@ public class Player {
 
 		// beginning of the game
 		if (precentage_of_non_empty_spaces < 1) {
-			String result = this.hintDiscard(partnerHand, boardState, 1);
-			if (result != null) {return result;}
+			if (boardState.tableau.get(0) == 0 || boardState.tableau.get(1) == 0 || boardState.tableau.get(2) == 0 || boardState.tableau.get(3) == 0 || boardState.tableau.get(4) == 0) {
+				String result = this.hintDiscard(partnerHand, boardState, 1);
+				if (result != null) {
+					return result;
+				}
 
-			result = this.play(boardState, 1);
-			if (result != null) {return result;}
+				result = this.play(boardState, 1);
+				if (result != null) {
+					return result;
+				}
 
-			result = this.hint(partnerHand, boardState, 1);
-			if (result != null) {return result;}
+				result = this.hint(partnerHand, boardState, 1);
+				if (result != null) {
+					return result;
+				}
+			}
 
+
+		}
+		else if (boardState.tableau.get(0) == 1 || boardState.tableau.get(1) == 1 || boardState.tableau.get(2) == 1 || boardState.tableau.get(3) == 1 || boardState.tableau.get(4) == 1) {
+			String result = this.hintDiscard(partnerHand, boardState, 2);
+			if (result != null) {
+				return result;
+			}
+
+			result = this.play(boardState, 2);
+			if (result != null) {
+				return result;
+			}
+
+			result = this.hint(partnerHand, boardState, 2);
+			if (result != null) {
+				return result;
+			}
+		}
+		else if (boardState.tableau.get(0) == 2 || boardState.tableau.get(1) == 2 || boardState.tableau.get(2) == 2 || boardState.tableau.get(3) == 2 || boardState.tableau.get(4) == 2) {
+			String result = this.hintDiscard(partnerHand, boardState, 3);
+			if (result != null) {
+				return result;
+			}
+
+			result = this.play(boardState, 3);
+			if (result != null) {
+				return result;
+			}
+
+			result = this.hint(partnerHand, boardState, 3);
+			if (result != null) {
+				return result;
+			}
+		}
+		else if (boardState.tableau.get(0) == 3 || boardState.tableau.get(1) == 3 || boardState.tableau.get(2) == 3 || boardState.tableau.get(3) == 3 || boardState.tableau.get(4) == 3) {
+			String result = this.hintDiscard(partnerHand, boardState, 4);
+			if (result != null) {
+				return result;
+			}
+
+			result = this.play(boardState, 4);
+			if (result != null) {
+				return result;
+			}
+
+			result = this.hint(partnerHand, boardState, 4);
+			if (result != null) {
+				return result;
+			}
+		}
+		else if (boardState.tableau.get(0) == 4 || boardState.tableau.get(1) == 4 || boardState.tableau.get(2) == 4 || boardState.tableau.get(3) == 4 || boardState.tableau.get(4) == 4) {
+			String result = this.hintDiscard(partnerHand, boardState, 5);
+			if (result != null) {
+				return result;
+			}
+
+			result = this.play(boardState, 5);
+			if (result != null) {
+				return result;
+			}
+
+			result = this.hint(partnerHand, boardState, 5);
+			if (result != null) {
+				return result;
+			}
 		}
 		assert false;
 
@@ -271,7 +344,7 @@ public class Player {
 					}
 
 					// use a number hint unless it is immediately playable
-					if (this.cardIsImmediatelyPlayable(leftCard, boardState)){
+					if (this.cardIsImmediatelyPlayable(leftCard, boardState) && boardState.numHints >= 6){
 						this.hasColorHinted[importantIndex] = true;
 						return "COLORHINT " + importantCard.color;
 					}
@@ -345,7 +418,7 @@ public class Player {
 			Card card = partnerHand.get(i);
 			// checking to see if it is a 1, no other color matches, and hint hasn't been given before
 			if (card.value == importantValue &&
-				(countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i])  {
+				(countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i] && boardState.numHints >= 6)  {
 				hasColorHinted[i] = true; // this card has been hinted at
 				return "COLORHINT " + card.color;
 			}
@@ -354,9 +427,10 @@ public class Player {
 				will_number_hint = true;
 				number_hint_indices.add(i);
 			}
+
 		}
 		// hint all 1's and add them to the number hinted array
-		if (will_number_hint && boardState.numHints >= 4) {
+		if (will_number_hint && boardState.numHints >= 6) {
 			for (int index : number_hint_indices) {
 				hasNumberHinted[index] = true;
 			}
