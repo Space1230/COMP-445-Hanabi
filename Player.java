@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
+
 
 public class Player {
 	private CardKnowledge[] ourDeckKnowledge;
@@ -213,16 +215,17 @@ public class Player {
 	public String ask(int yourHandSize, Hand partnerHand, Board boardState) {
 		//If this is the start of the game and none of the hints have been used, check to see if there are any fives in your partner's hands and hint them to him
 		double precentage_of_non_empty_spaces = getPercentageOfNonEmptySpaces(boardState);
+		System.out.println("");
 
 		// beginning of the game
 		if (precentage_of_non_empty_spaces < 1) {
-			String result = this.hintDiscard(partnerHand, boardState, 1);
+			String result = this.hintDiscard(partnerHand, boardState, 1, false);
 			if (result != null) {return result;}
 
 			result = this.play(boardState, 1);
 			if (result != null) {return result;}
 
-			result = this.hint(partnerHand, boardState, 1);
+			result = this.hint(partnerHand, boardState, 1, false);
 			if (result != null) {return result;}
 
 		}
@@ -244,22 +247,26 @@ public class Player {
 		return "DISCARD 0 0"; // Discard the first card in hand
 	}
 
-	public String hintDiscard(Hand partnerHand, Board boardState, int importantValue) {
+	public String hintDiscard(Hand partnerHand, Board boardState, int importantValue, boolean careAboutFives) {
 		int discardIndex = this.getPartnerDiscardIndex();
 		Card rightmostCard = partnerHand.get(discardIndex);
 		boolean rightmostCardIsImportant = this.cardIsImportant(boardState,
 																rightmostCard,
-																false);
+																careAboutFives);
 		if (rightmostCard.value == importantValue || rightmostCardIsImportant) {
 			// check if the left card has more priority
 			if (discardIndex > 0) { // valid left card
 				Card leftCard = partnerHand.get(discardIndex - 1);
 				boolean leftCardIsImportant = this.cardIsImportant(boardState,
 																leftCard,
-																false);
+																careAboutFives);
 				int importantIndex = -1;
 				Card importantCard = null;
 				if (rightmostCardIsImportant) {
+					System.out.println("rightmostCard: " + rightmostCard.toString());
+					System.out.println("rightImportant: " + rightmostCardIsImportant);
+					System.out.println("leftCard: " + leftCard.toString());
+					System.out.println("leftImportant: " + leftCardIsImportant);
 					if (rightmostCard.value >= leftCard.value ||
 						(rightmostCardIsImportant && !leftCardIsImportant)) {
 						importantIndex = discardIndex;
@@ -326,7 +333,7 @@ public class Player {
 		return null;
 	}
 
-	public String hint(Hand partnerHand, Board boardState, int importantValue) {
+	public String hint(Hand partnerHand, Board boardState, int importantValue, boolean careAboutFives) {
 		// Going to Use Color Hint
 		// the goal: ensure only there is only one card in the
 		// deck with one color
@@ -345,6 +352,7 @@ public class Player {
 			Card card = partnerHand.get(i);
 			// checking to see if it is a 1, no other color matches, and hint hasn't been given before
 			if (card.value == importantValue &&
+				this.shouldHint(boardState, partnerHand, this.getColorHintIndicies(boardState, partnerHand, card.color), careAboutFives) &&
 				(countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i])  {
 				hasColorHinted[i] = true; // this card has been hinted at
 				return "COLORHINT " + card.color;
@@ -356,7 +364,8 @@ public class Player {
 			}
 		}
 		// hint all 1's and add them to the number hinted array
-		if (will_number_hint && boardState.numHints >= 4) {
+		if (will_number_hint && boardState.numHints >= 4 &&
+			this.shouldHint(boardState, partnerHand, number_hint_indices, careAboutFives)) {
 			for (int index : number_hint_indices) {
 				hasNumberHinted[index] = true;
 			}
@@ -371,9 +380,6 @@ public class Player {
 					return "DISCARD " + i + " " + i;
 				}
 			}
-
-			// when reach end, need to determine most important
-			// card to keep
 		}
 		return null;
 	}
@@ -445,10 +451,12 @@ public class Player {
 
 		int[] avaliable_cards = { 3, 2, 2, 2, 1 };
 		int matches = discardMatches(boardState, card);
-		if (matches == (avaliable_cards[card.value - 1] - 1)) {
+		if (matches + 1 == avaliable_cards[card.value - 1]) {
+			System.out.println("Important: " + card.toString() + " = true");
 			return true;
 		}
 
+		System.out.println("Important: " + card.toString() + " = false");
 		return false;
 	}
 
@@ -478,25 +486,58 @@ public class Player {
 		return currentPlayedCard + 1 == card.value;
 	}
 
-	// if colorhint: supply color number to hintIdentifier
-	// if numberhint: supply number to hintIdentifier
 	public boolean shouldHint(Board boardState, Hand partnerHand,
-							  int hintIdentifier, boolean isColorHint) {
+							  ArrayList<Integer> hintIndicies, boolean careAboutFives) {
+		// get the new discard index if hint is applied
+		hintIndicies.sort(null);
+		List<Integer> hintIndiciesReversed = hintIndicies.reversed();
+		System.out.println("Hint Indicies: " + hintIndiciesReversed.toString());
+
 		int discardIndex = this.getPartnerDiscardIndex();
-		for (int index = discardIndex; index > -1; index--) {
-			Card toCheck = partnerHand.get(index);
-			boolean cardIsNotSameAsHint =
-				(isColorHint) ?(toCheck.color != hintIdentifier)
-				              :(toCheck.value != hintIdentifier);
-			// ensure multiple hints don't end on an important card
-			// this should run on the new discardIndex
-			if (cardIsNotSameAsHint) {
-				if (this.cardIsImportant(boardState, toCheck, false)){
-					return false;
-				}
-				return true;
+		int newDiscardIndex = discardIndex;
+
+		System.out.println("Discard Index: " + discardIndex);
+
+		for (int index : hintIndiciesReversed) {
+			if (index == discardIndex - 1) {
+				newDiscardIndex = index + 1;
 			}
 		}
+
+		System.out.println("New Discard Index: " + newDiscardIndex);
+
+		// see if next left card is important
+		if (this.cardIsImportant(boardState, partnerHand.get(newDiscardIndex),
+								 careAboutFives)) {
+			System.out.println("Card was Important");
+			return false;
+		}
+
 		return true;
+	}
+
+	public ArrayList<Integer> getColorHintIndicies(Board boardState, Hand partnerHand, int color) {
+		System.out.println("GetColorHintIndicesInput: " + color);
+		ArrayList<Integer> output = new ArrayList<Integer>();
+
+		for (int i = 0; i < 5; i++) {
+			Card card = partnerHand.get(i);
+			if (card.color == color) {
+				output.add(i);
+			}
+		}
+		return output;
+	}
+
+	public ArrayList<Integer> getNumberHintIndicies(Board boardState, Hand partnerHand, int color) {
+		ArrayList<Integer> output = new ArrayList<Integer>();
+
+		for (int i = 0; i < 5; i++) {
+			Card card = partnerHand.get(i);
+			if (card.color == color) {
+				output.add(i);
+			}
+		}
+		return output;
 	}
 }
