@@ -1,3 +1,7 @@
+/**
+ * Authors: Robert Lipnichan and Andy Sparks
+ */
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
