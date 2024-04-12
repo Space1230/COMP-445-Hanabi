@@ -419,6 +419,7 @@ public class Player {
 
 		ArrayList<Integer> usefulNums = this.getUsefulNumbers(boardState);
 		System.out.println("usefulNums" + usefulNums);
+		System.out.println("Will check: " + (usefulNums.contains(rightmostCard.value) || rightmostCardIsImportant));
 		if (usefulNums.contains(rightmostCard.value) || rightmostCardIsImportant) {
 			// check if the left card has more priority
 			if (discardIndex > 0) { // valid left card
@@ -429,12 +430,12 @@ public class Player {
 				int importantIndex = -1;
 				Card importantCard = null;
 				if (rightmostCardIsImportant) {
-//					System.out.println("rightmostCard: " + rightmostCard.toString());
-//					System.out.println("rightImportant: " + rightmostCardIsImportant);
-//					System.out.println("leftCard: " + leftCard.toString());
-//					System.out.println("leftImportant: " + leftCardIsImportant);
+					System.out.println("rightmostCard: " + rightmostCard.toString());
+					System.out.println("rightImportant: " + rightmostCardIsImportant);
+					System.out.println("leftCard: " + leftCard.toString());
+					System.out.println("leftImportant: " + leftCardIsImportant);
 					if (rightmostCard.value >= leftCard.value ||
-						(rightmostCardIsImportant && !leftCardIsImportant)) {
+						!leftCardIsImportant) {
 						importantIndex = discardIndex;
 						importantCard = rightmostCard;
 					}
@@ -453,6 +454,9 @@ public class Player {
 						this.hasNumberHinted[importantIndex] = true;
 						return "NUMBERHINT " + importantCard.value;
 					}
+				}
+				else {
+
 				}
 			}
 		}
