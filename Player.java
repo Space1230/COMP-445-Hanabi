@@ -215,10 +215,12 @@ public class Player {
 	public String ask(int yourHandSize, Hand partnerHand, Board boardState) {
 		//If this is the start of the game and none of the hints have been used, check to see if there are any fives in your partner's hands and hint them to him
 		double precentage_of_non_empty_spaces = getPercentageOfNonEmptySpaces(boardState);
+		int careAboutFivesScore = 13;
 //		System.out.println("");
 
 		if (boardState.numHints == 0){
-			int disc_idx = this.getDiscardIndex(ourDeckKnowledge);
+			boolean careAboutFives = (boardState.getTableauScore() >= careAboutFivesScore) ?true :false;
+			int disc_idx = this.getDiscardIndex(ourDeckKnowledge, boardState, careAboutFives);
 			return "DISCARD " + disc_idx + " " + disc_idx;
 		}
 
@@ -317,7 +319,7 @@ public class Player {
 			}
 
 			//If over half of the threes are filled, start hinting and playing 4s
-			if (boardState.getTableauScore() >=  13){
+			if (boardState.getTableauScore() >=  careAboutFivesScore){
 				result = this.hintDiscard(partnerHand, boardState, 4,false);
 				if (result != null) {
 					return result;
@@ -423,7 +425,7 @@ public class Player {
 				Card importantCard = null;
 				if (rightmostCardIsImportant) {
 //					System.out.println("rightmostCard: " + rightmostCard.toString());
-//					System.out.println("rightImportant: " + rightmostCardIsImportant);
+//					System.out.println("rightImportant: " + rightmostCardIsImportant);
 //					System.out.println("leftCard: " + leftCard.toString());
 //					System.out.println("leftImportant: " + leftCardIsImportant);
 					if (rightmostCard.value >= leftCard.value ||
@@ -638,14 +640,54 @@ public class Player {
 		return 0;
 	}
 
-	public int getDiscardIndex(CardKnowledge knowledge[]) {
+	public int getDiscardIndex(CardKnowledge knowledge[], Board boardState, boolean careAboutFives) {
 		for (int i = 4; i > -1; i--) {
 			if (!knowledge[i].hasBeenHinted) {
 				return i;
 			}
 		}
-		assert false; // TODO implement this later
-		return 0;
+		// TODO choose the best card to discard out of the hints
+		// We want to discard the card that we know the most information
+		// about, as long as it is not important
+		//
+		// If it is important, then we should discard the highest
+		int highestKnownCard = 0;
+		int highestKnownCardIndex = 0; // rightmost highest known card
+		int highestValueOnly = 0;
+		int highestValueOnlyIndex = 0; // rightmost highest value only
+		for (int i = 4; i > -1; i--) {
+			int color = knowledge[i].getKnownColor();
+			int value = knowledge[i].getKnownValue();
+
+			// if we know the card
+			if (color != -1 && value != -1) {
+				// if it isn't important, we get rid of it
+				if (!this.cardIsImportant(boardState, new Card(color, value), careAboutFives)) {
+					return i;
+				}
+				else {
+					if (value >= highestKnownCard) {
+						highestKnownCard = value;
+						highestKnownCardIndex = i;
+					}
+				}
+			}
+			// we only know the value
+			else if (value != -1) {
+				if (value >= highestValueOnly) {
+					highestValueOnly = value;
+					highestValueOnlyIndex = i;
+				}
+			}
+		}
+
+		// choose the unknown card if value is higher
+		if (highestValueOnly > highestKnownCard) {
+			return highestValueOnlyIndex;
+		}
+
+		// choose the highest known important card
+		return highestKnownCardIndex;
 	}
 
 	public boolean cardIsImmediatelyPlayable(Card card, Board boardState) {
