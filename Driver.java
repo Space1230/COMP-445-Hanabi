@@ -3,11 +3,11 @@ public class Driver {
 	public static void main(String[] args) {
 		// TODO: Change from ConsolePlayer to Player after you have an implementation
 		// Hanabi game = new Hanabi(true, new ConsolePlayer(), new ConsolePlayer());
-		Hanabi game = new Hanabi(true, new ConsolePlayer(), new Player());
-		game.play();
+//		Hanabi game = new Hanabi(true, new Player(), new Player());
+//		game.play();
 
-//		double average_score = simulateGames(1000,true);
-//		System.out.println("The average score is: " + average_score);
+		double average_score = simulateGames(1000,true);
+		System.out.println("The average score is: " + average_score);
 	}
 
 	/**
