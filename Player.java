@@ -216,6 +216,7 @@ public class Player {
 
 		// beginning of the game
 //		if (precentage_of_non_empty_spaces < 1) {
+			//If not all the ones have been played in the tableue, keep checking and hinting for ones
 			if (boardState.tableau.get(0) == 0 || boardState.tableau.get(1) == 0 || boardState.tableau.get(2) == 0 || boardState.tableau.get(3) == 0 || boardState.tableau.get(4) == 0) {
 				String result = this.hintDiscard(partnerHand, boardState, 1);
 				if (result != null) {
@@ -232,19 +233,23 @@ public class Player {
 					return result;
 				}
 
-//				result = this.hint(partnerHand, boardState, 2);
-//				if (result != null) {
-//					return result;
-//				}
-//
-//				result = this.play(boardState, 2);
-//				if (result != null) {
-//					return result;
-//				}
+				//If over half of the ones are filled, start hinting and playing 2s
+				if (boardState.getTableauScore() >= 3) {
+					result = this.hint(partnerHand, boardState, 2);
+					if (result != null) {
+						return result;
+					}
+
+					result = this.play(boardState, 2);
+					if (result != null) {
+						return result;
+					}
+				}
 			}
 
 
 		//}
+			//If not all the twos have been played in the tableue, keep checking and hinting for twos
 		else if (boardState.tableau.get(0) == 1 || boardState.tableau.get(1) == 1 || boardState.tableau.get(2) == 1 || boardState.tableau.get(3) == 1 || boardState.tableau.get(4) == 1) {
 			String result = this.hintDiscard(partnerHand, boardState, 2);
 			if (result != null) {
@@ -261,7 +266,8 @@ public class Player {
 				return result;
 			}
 
-			if (boardState.getTableauScore() >= 3) {
+			//If over half of the twos are filled, start hinting and playing 3s
+			if (boardState.getTableauScore() >= 8) {
 
 				result = this.hint(partnerHand, boardState, 3);
 				if (result != null) {
@@ -275,6 +281,8 @@ public class Player {
 			}
 
 		}
+
+		//If not all the threes have been played in the tableue, keep checking and hinting for threes
 		else if (boardState.tableau.get(0) == 2 || boardState.tableau.get(1) == 2 || boardState.tableau.get(2) == 2 || boardState.tableau.get(3) == 2 || boardState.tableau.get(4) == 2) {
 			String result = this.hintDiscard(partnerHand, boardState, 3);
 			if (result != null) {
@@ -291,7 +299,8 @@ public class Player {
 				return result;
 			}
 
-			if (boardState.getTableauScore() >=  8){
+			//If over half of the threes are filled, start hinting and playing 4s
+			if (boardState.getTableauScore() >=  13){
 				result = this.hint(partnerHand, boardState, 4);
 				if (result != null) {
 					return result;
@@ -303,6 +312,7 @@ public class Player {
 				}
 			}
 		}
+		//If not all the fours have been played in the tableue, keep checking and hinting for fours
 		else if (boardState.tableau.get(0) == 3 || boardState.tableau.get(1) == 3 || boardState.tableau.get(2) == 3 || boardState.tableau.get(3) == 3 || boardState.tableau.get(4) == 3) {
 			String result = this.hintDiscard(partnerHand, boardState, 4);
 			if (result != null) {
@@ -318,7 +328,9 @@ public class Player {
 			if (result != null) {
 				return result;
 			}
-			if (boardState.getTableauScore() >= 13) {
+
+			//If over half of the threes are filled, start hinting and playing 4s
+			if (boardState.getTableauScore() >= 18) {
 				result = this.hint(partnerHand, boardState, 5);
 				if (result != null) {
 					return result;
@@ -330,6 +342,8 @@ public class Player {
 				}
 			}
 		}
+
+		//If not all the fives have been played in the tableue, keep checking and hinting for fives
 		else if (boardState.tableau.get(0) == 4 || boardState.tableau.get(1) == 4 || boardState.tableau.get(2) == 4 || boardState.tableau.get(3) == 4 || boardState.tableau.get(4) == 4) {
 			String result = this.hintDiscard(partnerHand, boardState, 5);
 			if (result != null) {
