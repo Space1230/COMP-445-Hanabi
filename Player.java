@@ -3,7 +3,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.List;
 
 
 public class Player {
@@ -644,7 +643,7 @@ public class Player {
 		System.out.println("New Discard Index: " + newDiscardIndex);
 
 		// see if next left card is important
-		if (this.cardIsImportant(boardState, partnerHand.get(newDiscardIndex),
+		if (newDiscardIndex > -1 && this.cardIsImportant(boardState, partnerHand.get(newDiscardIndex),
 								 careAboutFives)) {
 			System.out.println("Card was Important");
 			return false;
