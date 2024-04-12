@@ -420,7 +420,7 @@ public class Player {
 	public int discardMatches (Board boardState, Card card) {
 		int matches = 0;
 		for (Card discard : boardState.discards) {
-			if (discard == card) {
+			if (discard.equals(card)) {
 				matches++;
 			}
 		}
@@ -462,7 +462,7 @@ public class Player {
 
 	public int getPartnerDiscardIndex() {
 		for (int i = 4; i > -1; i--) {
-			if (!this.hasColorHinted[i] && !this.hasColorHinted[i]){
+			if (!this.hasColorHinted[i] && !this.hasNumberHinted[i]){
 				return i;
 			}
 		}
@@ -499,8 +499,9 @@ public class Player {
 		System.out.println("Discard Index: " + discardIndex);
 
 		for (int index : hintIndiciesReversed) {
-			if (index == discardIndex - 1) {
-				newDiscardIndex = index + 1;
+			// left of discard index
+			if (index == discardIndex) {
+				newDiscardIndex = index - 1;
 			}
 		}
 
