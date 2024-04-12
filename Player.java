@@ -215,11 +215,10 @@ public class Player {
 	public String ask(int yourHandSize, Hand partnerHand, Board boardState) {
 		//If this is the start of the game and none of the hints have been used, check to see if there are any fives in your partner's hands and hint them to him
 		double precentage_of_non_empty_spaces = getPercentageOfNonEmptySpaces(boardState);
-		int careAboutFivesScore = 13;
+		boolean careAboutFives = (boardState.getTableauScore() >= 13) ?true :false;
 //		System.out.println("");
 
 		if (boardState.numHints == 0){
-			boolean careAboutFives = (boardState.getTableauScore() >= careAboutFivesScore) ?true :false;
 			int disc_idx = this.getDiscardIndex(ourDeckKnowledge, boardState, careAboutFives);
 			return "DISCARD " + disc_idx + " " + disc_idx;
 		}
@@ -390,7 +389,8 @@ public class Player {
 			}
 		}
 //		System.out.println("Fuses: " + boardState.numFuses);
-		assert false;
+			int discardIndex = this.getDiscardIndex(ourDeckKnowledge, boardState, careAboutFives);
+			assert false;
 
 //		if (boardState.numHints == 8){
 //			for (int i = 0;i < partnerHand.size();i++){
@@ -479,6 +479,7 @@ public class Player {
 						return "PLAY " + i + " " + i;
 					}
 					else {
+						System.out.println("Testing");
 						return "DISCARD " + i + " " + i;
 					}
 				}
@@ -543,13 +544,13 @@ public class Player {
 		}
 		// discard the rightmost card
 		// probably wrong syntax
-		else {
-			for (int i = 4; i > -1; i--) {
-				if (!ourDeckKnowledge[i].hasBeenHinted) {
-					return "DISCARD " + i + " " + i;
-				}
-			}
-		}
+		// else {
+		// 	for (int i = 4; i > -1; i--) {
+		// 		if (!ourDeckKnowledge[i].hasBeenHinted) {
+		// 			return "DISCARD " + i + " " + i;
+		// 		}
+		// 	}
+		// }
 		return null;
 	}
 
