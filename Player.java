@@ -350,10 +350,12 @@ public class Player {
 
 		for (int i = 0; i < partnerHand.size(); i++) {
 			Card card = partnerHand.get(i);
-			// checking to see if it is a 1, no other color matches, and hint hasn't been given before
+			// checking to see if it is a 1, no other color matches, hint hasn't been given before, and card is immediately playable
 			if (card.value == importantValue &&
 				this.shouldHint(boardState, partnerHand, this.getColorHintIndicies(boardState, partnerHand, card.color), careAboutFives) &&
-				(countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i])  {
+				((countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i]) &&
+				this.cardIsImmediatelyPlayable(card, boardState)) {
+				System.out.println("COLORHINT Card: " + card.toString());
 				hasColorHinted[i] = true; // this card has been hinted at
 				return "COLORHINT " + card.color;
 			}
@@ -483,7 +485,9 @@ public class Player {
 
 	public boolean cardIsImmediatelyPlayable(Card card, Board boardState) {
 		int currentPlayedCard = boardState.tableau.get(card.color);
-		return currentPlayedCard + 1 == card.value;
+		boolean result = currentPlayedCard + 1 == card.value;
+		System.out.println("cardImmediately: " + card.toString() + " " + result);
+		return result;
 	}
 
 	public boolean shouldHint(Board boardState, Hand partnerHand,
