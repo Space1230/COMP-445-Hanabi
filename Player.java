@@ -138,7 +138,7 @@ public class Player {
 				// If you played a card legally, update knowledge
 				for (CardKnowledge knowledge : ourDeckKnowledge) {
 					knowledge.eliminateCard(play);
-					ourImpossibleCards.add(play);
+					//ourImpossibleCards.add(play);
 				}
 			} else {
 				// If you played a card illegally, it must have been discarded
@@ -229,6 +229,7 @@ public class Player {
 			if (result != null) {return result;}
 
 		}
+		System.out.println("Fuses: " + boardState.numFuses);
 		assert false;
 
 		if (boardState.numHints == 8){
@@ -276,6 +277,7 @@ public class Player {
 						importantIndex = discardIndex - 1;
 						importantCard = leftCard;
 					}
+					System.out.println("importantCard: " + importantCard.toString());
 
 					// use a number hint unless it is immediately playable
 					if (this.cardIsImmediatelyPlayable(leftCard, boardState)){
@@ -311,7 +313,8 @@ public class Player {
 				// check to see if we know the number too
 				if (value == importantValue) {
 					Card card = new Card(color, value);
-					if (boardState.isLegalPlay(card)){
+					if (this.cardIsImmediatelyPlayable(card, boardState)){
+					System.out.println("Deck Knowledge: " + ourDeckKnowledge[i].options);
 						return "PLAY " + i + " " + i;
 					}
 					else {
@@ -324,8 +327,8 @@ public class Player {
 		for (int i = 0; i < 5; i++) {
 			if ((card_index = num_color[i]) > -1) {
 				// check to see if the play is valid
-				if (ourDeckKnowledge[card_index].options
-					.contains(new Card(i, importantValue))) {
+				if (ourDeckKnowledge[card_index].isDefinitelyPlayable(boardState)) {
+					System.out.println("Deck Knowledge: " + ourDeckKnowledge[card_index].options);
 					return "PLAY " + card_index + " " + card_index;
 				}
 			}
@@ -438,7 +441,7 @@ public class Player {
 											  Set<Card> impossibleCards) {
 		int[] avaliable_cards = { 3, 2, 2, 2, 1 };
 		int matches = discardMatches(boardState, card);
-		if (matches > avaliable_cards[card.value - 1]) { // TODO fix
+		if (matches + 1 == avaliable_cards[card.value - 1]) { // TODO fix
 			for (CardKnowledge know : knowledge) { // inefficent, but works
 				know.eliminateCard(card);
 			}
