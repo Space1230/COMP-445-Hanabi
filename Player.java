@@ -517,7 +517,7 @@ public class Player {
 				this.shouldHint(boardState, partnerHand, this.getColorHintIndicies(boardState, partnerHand, card.color), careAboutFives) &&
 				((countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i]) &&
 				this.cardIsImmediatelyPlayable(card, boardState)) {
-				System.out.println("COLORHINT Card: " + card.toString());
+//				System.out.println("COLORHINT Card: " + card.toString());
 				hasColorHinted[i] = true; // this card has been hinted at
 				return "COLORHINT " + card.color;
 			}
@@ -648,7 +648,7 @@ public class Player {
 	public boolean cardIsImmediatelyPlayable(Card card, Board boardState) {
 		int currentPlayedCard = boardState.tableau.get(card.color);
 		boolean result = currentPlayedCard + 1 == card.value;
-		System.out.println("cardImmediately: " + card.toString() + " " + result);
+//		System.out.println("cardImmediately: " + card.toString() + " " + result);
 		return result;
 	}
 
