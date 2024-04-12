@@ -215,7 +215,7 @@ public class Player {
 	public String ask(int yourHandSize, Hand partnerHand, Board boardState) {
 		//If this is the start of the game and none of the hints have been used, check to see if there are any fives in your partner's hands and hint them to him
 		double precentage_of_non_empty_spaces = getPercentageOfNonEmptySpaces(boardState);
-		boolean careAboutFives = (boardState.getTableauScore() >= 13) ?true :false;
+		boolean careAboutFives = (boardState.getTableauScore() >= 18) ?true :false;
 //		System.out.println("");
 
 		if (boardState.numHints == 0){
@@ -318,7 +318,7 @@ public class Player {
 			}
 
 			//If over half of the threes are filled, start hinting and playing 4s
-			if (boardState.getTableauScore() >=  careAboutFivesScore){
+			if (careAboutFives){
 				result = this.hintDiscard(partnerHand, boardState, 4,false);
 				if (result != null) {
 					return result;
@@ -425,7 +425,8 @@ public class Player {
 				Card importantCard = null;
 				if (rightmostCardIsImportant) {
 //					System.out.println("rightmostCard: " + rightmostCard.toString());
-//					System.out.println("rightImportant: " + rightmostCardIsImportant);
+//					System.out.println("rightImportant: " + rightmostCardIsImportant);
+
 //					System.out.println("leftCard: " + leftCard.toString());
 //					System.out.println("leftImportant: " + leftCardIsImportant);
 					if (rightmostCard.value >= leftCard.value ||
@@ -544,13 +545,13 @@ public class Player {
 		}
 		// discard the rightmost card
 		// probably wrong syntax
-		// else {
-		// 	for (int i = 4; i > -1; i--) {
-		// 		if (!ourDeckKnowledge[i].hasBeenHinted) {
-		// 			return "DISCARD " + i + " " + i;
-		// 		}
-		// 	}
-		// }
+		 else {
+		 	for (int i = 4; i > -1; i--) {
+		 		if (!ourDeckKnowledge[i].hasBeenHinted) {
+		 			return "DISCARD " + i + " " + i;
+		 		}
+		 	}
+		 }
 		return null;
 	}
 

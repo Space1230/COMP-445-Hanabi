@@ -1,3 +1,6 @@
+/**
+ * Authors: Robert Lipnichan and Andy Sparks
+ */
 
 import java.util.HashSet;
 import java.util.Set;
