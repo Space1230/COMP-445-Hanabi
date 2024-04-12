@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
@@ -489,16 +490,15 @@ public class Player {
 	public boolean shouldHint(Board boardState, Hand partnerHand,
 							  ArrayList<Integer> hintIndicies, boolean careAboutFives) {
 		// get the new discard index if hint is applied
-		hintIndicies.sort(null);
-		List<Integer> hintIndiciesReversed = hintIndicies.reversed();
-		System.out.println("Hint Indicies: " + hintIndiciesReversed.toString());
+		hintIndicies.sort(Comparator.reverseOrder());
+		System.out.println("Hint Indicies: " + hintIndicies.toString());
 
 		int discardIndex = this.getPartnerDiscardIndex();
 		int newDiscardIndex = discardIndex;
 
 		System.out.println("Discard Index: " + discardIndex);
 
-		for (int index : hintIndiciesReversed) {
+		for (int index : hintIndicies) {
 			// left of discard index
 			if (index == discardIndex) {
 				newDiscardIndex = index - 1;
