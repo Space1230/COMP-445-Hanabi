@@ -215,7 +215,7 @@ public class Player {
 		double precentage_of_non_empty_spaces = getPercentageOfNonEmptySpaces(boardState);
 
 		// beginning of the game
-		if (precentage_of_non_empty_spaces < 1) {
+//		if (precentage_of_non_empty_spaces < 1) {
 			if (boardState.tableau.get(0) == 0 || boardState.tableau.get(1) == 0 || boardState.tableau.get(2) == 0 || boardState.tableau.get(3) == 0 || boardState.tableau.get(4) == 0) {
 				String result = this.hintDiscard(partnerHand, boardState, 1);
 				if (result != null) {
@@ -231,10 +231,20 @@ public class Player {
 				if (result != null) {
 					return result;
 				}
+
+//				result = this.hint(partnerHand, boardState, 2);
+//				if (result != null) {
+//					return result;
+//				}
+//
+//				result = this.play(boardState, 2);
+//				if (result != null) {
+//					return result;
+//				}
 			}
 
 
-		}
+		//}
 		else if (boardState.tableau.get(0) == 1 || boardState.tableau.get(1) == 1 || boardState.tableau.get(2) == 1 || boardState.tableau.get(3) == 1 || boardState.tableau.get(4) == 1) {
 			String result = this.hintDiscard(partnerHand, boardState, 2);
 			if (result != null) {
@@ -250,6 +260,20 @@ public class Player {
 			if (result != null) {
 				return result;
 			}
+
+			if (boardState.getTableauScore() >= 3) {
+
+				result = this.hint(partnerHand, boardState, 3);
+				if (result != null) {
+					return result;
+				}
+
+				result = this.play(boardState, 3);
+				if (result != null) {
+					return result;
+				}
+			}
+
 		}
 		else if (boardState.tableau.get(0) == 2 || boardState.tableau.get(1) == 2 || boardState.tableau.get(2) == 2 || boardState.tableau.get(3) == 2 || boardState.tableau.get(4) == 2) {
 			String result = this.hintDiscard(partnerHand, boardState, 3);
@@ -266,6 +290,18 @@ public class Player {
 			if (result != null) {
 				return result;
 			}
+
+			if (boardState.getTableauScore() >=  8){
+				result = this.hint(partnerHand, boardState, 4);
+				if (result != null) {
+					return result;
+				}
+
+				result = this.play(boardState, 4);
+				if (result != null) {
+					return result;
+				}
+			}
 		}
 		else if (boardState.tableau.get(0) == 3 || boardState.tableau.get(1) == 3 || boardState.tableau.get(2) == 3 || boardState.tableau.get(3) == 3 || boardState.tableau.get(4) == 3) {
 			String result = this.hintDiscard(partnerHand, boardState, 4);
@@ -281,6 +317,17 @@ public class Player {
 			result = this.hint(partnerHand, boardState, 4);
 			if (result != null) {
 				return result;
+			}
+			if (boardState.getTableauScore() >= 13) {
+				result = this.hint(partnerHand, boardState, 5);
+				if (result != null) {
+					return result;
+				}
+
+				result = this.play(boardState, 5);
+				if (result != null) {
+					return result;
+				}
 			}
 		}
 		else if (boardState.tableau.get(0) == 4 || boardState.tableau.get(1) == 4 || boardState.tableau.get(2) == 4 || boardState.tableau.get(3) == 4 || boardState.tableau.get(4) == 4) {
@@ -304,14 +351,14 @@ public class Player {
 		if (boardState.numHints == 8){
 			for (int i = 0;i < partnerHand.size();i++){
 				if (partnerHand.get(i).value == 5){
-					//return "NUMBERHINT 5";
+					return "NUMBERHINT 5";
 				}
 			}
 		}
 		for (int i = 0; i < yourHandSize; i++){
-			// if (knowledge.getValue(myHand.get(i)) ==  5){
-			// 	return "DISCARD " + i + " " + i;
-			// }
+			 if (ourDeckKnowledge[i].getKnownValue() == 5){
+			 	return "DISCARD " + i + " " + i;
+			 }
 		}
 
 		return "DISCARD 0 0"; // Discard the first card in hand
@@ -365,6 +412,7 @@ public class Player {
 			int color = ourDeckKnowledge[i].getKnownColor();
 			int value = ourDeckKnowledge[i].getKnownValue();
 			// check to see if we know the color
+
 			if (ourDeckKnowledge[i].hasBeenHinted && color != -1) { // if color hint
 				if (num_color[color] != -2) { // unique color
 					if (num_color[color] != -1) {
