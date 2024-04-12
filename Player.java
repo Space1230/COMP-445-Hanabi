@@ -387,7 +387,7 @@ public class Player {
 				return result;
 			}
 		}
-		System.out.println("Fuses: " + boardState.numFuses);
+//		System.out.println("Fuses: " + boardState.numFuses);
 		assert false;
 
 //		if (boardState.numHints == 8){
@@ -435,7 +435,7 @@ public class Player {
 						importantIndex = discardIndex - 1;
 						importantCard = leftCard;
 					}
-					System.out.println("importantCard: " + importantCard.toString());
+//					System.out.println("importantCard: " + importantCard.toString());
 
 					// use a number hint unless it is immediately playable
 					if (this.cardIsImmediatelyPlayable(leftCard, boardState)){
@@ -473,7 +473,7 @@ public class Player {
 				if (value == importantValue) {
 					Card card = new Card(color, value);
 					if (this.cardIsImmediatelyPlayable(card, boardState)){
-					System.out.println("Deck Knowledge: " + ourDeckKnowledge[i].options);
+//					System.out.println("Deck Knowledge: " + ourDeckKnowledge[i].options);
 						return "PLAY " + i + " " + i;
 					}
 					else {
@@ -487,7 +487,7 @@ public class Player {
 			if ((card_index = num_color[i]) > -1) {
 				// check to see if the play is valid
 				if (ourDeckKnowledge[card_index].isDefinitelyPlayable(boardState)) {
-					System.out.println("Deck Knowledge: " + ourDeckKnowledge[card_index].options);
+//					System.out.println("Deck Knowledge: " + ourDeckKnowledge[card_index].options);
 					return "PLAY " + card_index + " " + card_index;
 				}
 			}
