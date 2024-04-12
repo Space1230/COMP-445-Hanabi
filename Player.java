@@ -4,18 +4,15 @@ import java.util.Set;
 import java.util.HashSet;
 
 public class Player {
-	private Hand myHand;
 	private CardKnowledge[] ourDeckKnowledge;
 	private Set<Card> ourImpossibleCards;
 	private CardKnowledge[] theirDeckKnowledge;
 	private Set<Card> theirImpossibleCards;
 
-	private Board boardState;
 	private boolean hasColorHinted[];
 	private boolean hasNumberHinted[];
 
 	public Player() {
-		myHand = new Hand();
 
 		ourDeckKnowledge = new CardKnowledge[5];
 		theirDeckKnowledge = new CardKnowledge[5]; // TODO implement this
@@ -26,7 +23,6 @@ public class Player {
 		ourImpossibleCards = new HashSet<Card>();
 		theirImpossibleCards = new HashSet<Card>();
 
-		boardState = new Board();
 		hasColorHinted = new boolean[5];
 		hasNumberHinted = new boolean[5];
 	}
@@ -220,13 +216,13 @@ public class Player {
 
 		// beginning of the game
 		if (precentage_of_non_empty_spaces < 1) {
-			String result = this.hintDiscard(partnerHand, boardState);
+			String result = this.hintDiscard(partnerHand, boardState, 1);
 			if (result != null) {return result;}
 
-			result = this.play(boardState);
+			result = this.play(boardState, 1);
 			if (result != null) {return result;}
 
-			result = this.hint(partnerHand, boardState);
+			result = this.hint(partnerHand, boardState, 1);
 			if (result != null) {return result;}
 
 		}
@@ -248,13 +244,13 @@ public class Player {
 		return "DISCARD 0 0"; // Discard the first card in hand
 	}
 
-	public String hintDiscard(Hand partnerHand, Board boardState) {
+	public String hintDiscard(Hand partnerHand, Board boardState, int importantValue) {
 		int discardIndex = this.getPartnerDiscardIndex();
 		Card rightmostCard = partnerHand.get(discardIndex);
 		boolean rightmostCardIsImportant = this.cardIsImportant(boardState,
 																rightmostCard,
 																false);
-		if (rightmostCard.value == 1 || rightmostCardIsImportant) {
+		if (rightmostCard.value == importantValue || rightmostCardIsImportant) {
 			// check if the left card has more priority
 			if (discardIndex > 0) { // valid left card
 				Card leftCard = partnerHand.get(discardIndex - 1);
@@ -289,7 +285,7 @@ public class Player {
 		return null;
 	}
 
-	public String play(Board boardState){
+	public String play(Board boardState, int importantValue){
 		int num_color[] = new int[5];
 		Arrays.fill(num_color, -1);
 		for (int i = 0; i < 5; i++) { // searching for hint
@@ -306,7 +302,7 @@ public class Player {
 					}
 				}
 				// check to see if we know the number too
-				if (value == 1) {
+				if (value == importantValue) {
 					Card card = new Card(color, value);
 					if (boardState.isLegalPlay(card)){
 						return "PLAY " + i + " " + i;
@@ -322,7 +318,7 @@ public class Player {
 			if ((card_index = num_color[i]) > -1) {
 				// check to see if the play is valid
 				if (ourDeckKnowledge[card_index].options
-					.contains(new Card(i, 1))) {
+					.contains(new Card(i, importantValue))) {
 					return "PLAY " + card_index + " " + card_index;
 				}
 			}
@@ -330,7 +326,7 @@ public class Player {
 		return null;
 	}
 
-	public String hint(Hand partnerHand, Board boardState) {
+	public String hint(Hand partnerHand, Board boardState, int importantValue) {
 		// Going to Use Color Hint
 		// the goal: ensure only there is only one card in the
 		// deck with one color
@@ -348,16 +344,13 @@ public class Player {
 		for (int i = 0; i < partnerHand.size(); i++) {
 			Card card = partnerHand.get(i);
 			// checking to see if it is a 1, no other color matches, and hint hasn't been given before
-			if (card.value == 1 &&
+			if (card.value == importantValue &&
 				(countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i])  {
 				hasColorHinted[i] = true; // this card has been hinted at
-
-				// will be extracted to function
-
 				return "COLORHINT " + card.color;
 			}
 			// will do a number hint; doesn't make sense if already done
-			else if (card.value == 1 && !hasNumberHinted[i]) {
+			else if (card.value == importantValue && !hasNumberHinted[i]) {
 				will_number_hint = true;
 				number_hint_indices.add(i);
 			}
@@ -368,7 +361,7 @@ public class Player {
 				hasNumberHinted[index] = true;
 			}
 
-			return "NUMBERHINT 1";
+			return "NUMBERHINT" + importantValue;
 		}
 		// discard the rightmost card
 		// probably wrong syntax
