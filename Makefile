@@ -11,7 +11,7 @@ Phony: run
 
 run: hanabi
 	cd build && \
-	java Driver
+	java -ea Driver
 
 clean:
 	rm -rf build
