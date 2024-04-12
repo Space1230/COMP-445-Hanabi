@@ -362,18 +362,18 @@ public class Player {
 		}
 		assert false;
 
-		if (boardState.numHints == 8){
-			for (int i = 0;i < partnerHand.size();i++){
-				if (partnerHand.get(i).value == 5){
-					return "NUMBERHINT 5";
-				}
-			}
-		}
-		for (int i = 0; i < yourHandSize; i++){
-			 if (ourDeckKnowledge[i].getKnownValue() == 5){
-			 	return "DISCARD " + i + " " + i;
-			 }
-		}
+//		if (boardState.numHints == 8){
+//			for (int i = 0;i < partnerHand.size();i++){
+//				if (partnerHand.get(i).value == 5){
+//					return "NUMBERHINT 5";
+//				}
+//			}
+//		}
+//		for (int i = 0; i < yourHandSize; i++){
+//			 if (ourDeckKnowledge[i].getKnownValue() == 5){
+//			 	return "DISCARD " + i + " " + i;
+//			 }
+//		}
 
 		return "DISCARD 0 0"; // Discard the first card in hand
 	}
