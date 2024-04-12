@@ -636,7 +636,7 @@ public class Player {
 
 		for (int index : hintIndicies) {
 			// left of discard index
-			if (index == discardIndex) {
+			if (index == newDiscardIndex) {
 				newDiscardIndex = index - 1;
 			}
 		}
