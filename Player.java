@@ -247,12 +247,12 @@ public class Player {
 					if (result != null) {
 						return result;
 					}
-					result = this.hint(partnerHand, boardState, 2,false);
+
+					result = this.play(boardState, 2);
 					if (result != null) {
 						return result;
 					}
-
-					result = this.play(boardState, 2);
+					result = this.hint(partnerHand, boardState, 2,false);
 					if (result != null) {
 						return result;
 					}
@@ -261,7 +261,7 @@ public class Player {
 
 
 		//}
-			//If not all the twos have been played in the tableue, keep checking and hinting for twos
+			// If not all the twos have been played in the tableue, keep checking and hinting for twos
 		else if (boardState.tableau.get(0) == 1 || boardState.tableau.get(1) == 1 || boardState.tableau.get(2) == 1 || boardState.tableau.get(3) == 1 || boardState.tableau.get(4) == 1) {
 			String result = this.hintDiscard(partnerHand, boardState, 2,false);
 			if (result != null) {
@@ -284,15 +284,17 @@ public class Player {
 				if (result != null) {
 					return result;
 				}
-				result = this.hint(partnerHand, boardState, 3,false);
-				if (result != null) {
-					return result;
-				}
 
 				result = this.play(boardState, 3);
 				if (result != null) {
 					return result;
 				}
+				result = this.hint(partnerHand, boardState, 3,false);
+				if (result != null) {
+					return result;
+				}
+
+
 			}
 
 		}
@@ -320,15 +322,16 @@ public class Player {
 				if (result != null) {
 					return result;
 				}
+				result = this.play(boardState, 4);
+				if (result != null) {
+					return result;
+				}
 				result = this.hint(partnerHand, boardState, 4,false);
 				if (result != null) {
 					return result;
 				}
 
-				result = this.play(boardState, 4);
-				if (result != null) {
-					return result;
-				}
+
 			}
 		}
 		//If not all the fours have been played in the tableue, keep checking and hinting for fours
@@ -354,15 +357,16 @@ public class Player {
 				if (result != null) {
 					return result;
 				}
+				result = this.play(boardState, 5);
+				if (result != null) {
+					return result;
+				}
 				result = this.hint(partnerHand, boardState, 5,true);
 				if (result != null) {
 					return result;
 				}
 
-				result = this.play(boardState, 5);
-				if (result != null) {
-					return result;
-				}
+
 			}
 		}
 
