@@ -236,13 +236,13 @@ public class Player {
 					return result;
 				}
 
-				result = this.hint(partnerHand, boardState, 1,true);
+				result = this.hint(partnerHand, boardState, 1,false);
 				if (result != null) {
 					return result;
 				}
 
 				//If over half of the ones are filled, start hinting and playing 2s
-				if (boardState.getTableauScore() >= 3) {
+				if (boardState.getTableauScore() >= 0) {
 					result = this.hintDiscard(partnerHand, boardState, 2,false);
 					if (result != null) {
 						return result;
