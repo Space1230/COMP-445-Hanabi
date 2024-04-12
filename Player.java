@@ -220,6 +220,7 @@ public class Player {
 
 		if (boardState.numHints == 0){
 			int disc_idx = this.getDiscardIndex(ourDeckKnowledge, boardState, careAboutFives);
+			System.out.println("discard1");
 			return "DISCARD " + disc_idx + " " + disc_idx;
 		}
 
@@ -318,7 +319,7 @@ public class Player {
 			}
 
 			//If over half of the threes are filled, start hinting and playing 4s
-			if (boardState.getTableauScore() >=  careAboutFivesScore){
+			if (careAboutFives){
 				result = this.hintDiscard(partnerHand, boardState, 4,false);
 				if (result != null) {
 					return result;
@@ -390,7 +391,8 @@ public class Player {
 		}
 //		System.out.println("Fuses: " + boardState.numFuses);
 			int discardIndex = this.getDiscardIndex(ourDeckKnowledge, boardState, careAboutFives);
-			assert false;
+			System.out.println("discard2");
+			return "DISCARD " + discardIndex + " " + discardIndex;
 
 //		if (boardState.numHints == 8){
 //			for (int i = 0;i < partnerHand.size();i++){
@@ -405,16 +407,19 @@ public class Player {
 //			 }
 //		}
 
-		return "DISCARD 0 0"; // Discard the first card in hand
 	}
 
 	public String hintDiscard(Hand partnerHand, Board boardState, int importantValue, boolean careAboutFives) {
+		// TODO make care about important cards first, then about useful cards
 		int discardIndex = this.getPartnerDiscardIndex();
 		Card rightmostCard = partnerHand.get(discardIndex);
 		boolean rightmostCardIsImportant = this.cardIsImportant(boardState,
 																rightmostCard,
 																careAboutFives);
-		if (rightmostCard.value == importantValue || rightmostCardIsImportant) {
+
+		ArrayList<Integer> usefulNums = this.getUsefulNumbers(boardState);
+		System.out.println("usefulNums" + usefulNums);
+		if (usefulNums.contains(rightmostCard.value) || rightmostCardIsImportant) {
 			// check if the left card has more priority
 			if (discardIndex > 0) { // valid left card
 				Card leftCard = partnerHand.get(discardIndex - 1);
@@ -451,6 +456,7 @@ public class Player {
 				}
 			}
 		}
+
 		return null;
 	}
 
@@ -479,7 +485,7 @@ public class Player {
 						return "PLAY " + i + " " + i;
 					}
 					else {
-						System.out.println("Testing");
+						System.out.println("discard3");
 						return "DISCARD " + i + " " + i;
 					}
 				}
@@ -544,13 +550,14 @@ public class Player {
 		}
 		// discard the rightmost card
 		// probably wrong syntax
-		// else {
-		// 	for (int i = 4; i > -1; i--) {
-		// 		if (!ourDeckKnowledge[i].hasBeenHinted) {
-		// 			return "DISCARD " + i + " " + i;
-		// 		}
-		// 	}
-		// }
+		else {
+			for (int i = 4; i > -1; i--) {
+				if (!ourDeckKnowledge[i].hasBeenHinted) {
+					System.out.println("discard4");
+					return "DISCARD " + i + " " + i;
+				}
+			}
+		}
 		return null;
 	}
 
@@ -750,6 +757,19 @@ public class Player {
 				output.add(i);
 			}
 		}
+		return output;
+	}
+
+	public ArrayList<Integer> getUsefulNumbers(Board boardState) {
+		ArrayList<Integer> output = new ArrayList<Integer>();
+
+		for (int number : boardState.tableau){
+			if (!output.contains(number + 1)) {
+				output.add(number + 1);
+			}
+		}
+
+		output.sort(null);
 		return output;
 	}
 }
