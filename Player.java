@@ -361,7 +361,7 @@ public class Player {
 				hasNumberHinted[index] = true;
 			}
 
-			return "NUMBERHINT" + importantValue;
+			return "NUMBERHINT " + importantValue;
 		}
 		// discard the rightmost card
 		// probably wrong syntax
