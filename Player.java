@@ -1,21 +1,30 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.HashSet;
 
 public class Player {
-	private Hand myHand;
-	private CardKnowledge knowledge;
-	private Board boardState;
+	private CardKnowledge[] ourDeckKnowledge;
+	private Set<Card> ourImpossibleCards;
+	private CardKnowledge[] theirDeckKnowledge;
+	private Set<Card> theirImpossibleCards;
+
 	private boolean hasColorHinted[];
 	private boolean hasNumberHinted[];
 
 	public Player() {
-		myHand = new Hand();
-		knowledge = new CardKnowledge();
-		boardState = new Board();
+
+		ourDeckKnowledge = new CardKnowledge[5];
+		theirDeckKnowledge = new CardKnowledge[5]; // TODO implement this
+		for (int i = 0; i < 5; i++) {
+			ourDeckKnowledge[i] = new CardKnowledge();
+			theirDeckKnowledge[i] = new CardKnowledge();
+		}
+		ourImpossibleCards = new HashSet<Card>();
+		theirImpossibleCards = new HashSet<Card>();
+
 		hasColorHinted = new boolean[5];
-		Arrays.fill(hasColorHinted, false);
 		hasNumberHinted = new boolean[5];
-		Arrays.fill(hasNumberHinted, false);
 	}
 
 	/**
@@ -35,12 +44,16 @@ public class Player {
 			hasNumberHinted[disIndex] = false; // reset hints for new index
 			hasColorHinted[disIndex] = false; // reset hints for new index
 			// If the partner discarded a card, it means that card is not playable
-			knowledge.eliminateCard(discard);
+			this.removeCardAndUpdateImpossible(boardState, discard, theirDeckKnowledge, theirImpossibleCards);
 		}
 		// If the partner drew a card, update knowledge
 		if (draw != null) {
 			// If the partner drew a card, add it to knowledge
-			knowledge.eliminateCard(draw);
+			theirDeckKnowledge[disIndex] = new CardKnowledge(theirImpossibleCards);
+			//theirDeckKnowledge[disIndex].eliminateNonPlayableOptions(boardState);
+		}
+		else {
+			assert false;
 		}
 	}
 
@@ -56,12 +69,16 @@ public class Player {
 		// If you discarded a card, update knowledge
 		if (discard != null) {
 			// If you discarded a card, it means that card is not playable
-			knowledge.eliminateCard(discard);
+			this.removeCardAndUpdateImpossible(boardState, discard, ourDeckKnowledge, ourImpossibleCards);
 		}
 		// If you drew a card, update knowledge
 		if (drawSucceeded) {
 			// If you drew a card, add it to knowledge
-			knowledge.eliminateCard(boardState.discards.get(boardState.discards.size() - 1));
+			//knowledge.eliminateCard(boardState.discards.get(boardState.discards.size() - 1));
+			ourDeckKnowledge[disIndex] = new CardKnowledge(ourImpossibleCards);
+		}
+		else {
+			assert false;
 		}
 	}
 
@@ -84,16 +101,22 @@ public class Player {
 			hasNumberHinted[playIndex] = false; // reset hints for new index
 			if (wasLegalPlay) {
 				// If the partner played a card legally, update knowledge
-				knowledge.eliminateCard(play);
+				for (CardKnowledge knowledge : theirDeckKnowledge) {
+					knowledge.eliminateCard(draw);
+				}
 			} else {
 				// If the partner played a card illegally, it must have been discarded
-				knowledge.eliminateCard(play);
+				//knowledge.eliminateCard(play);
 			}
+			this.removeCardAndUpdateImpossible(boardState, draw, theirDeckKnowledge, theirImpossibleCards);
 		}
 		// If the partner drew a card, update knowledge
 		if (draw != null) {
 			// If the partner drew a card, add it to knowledge
-			knowledge.eliminateCard(draw);
+			theirDeckKnowledge[playIndex] = new CardKnowledge(theirImpossibleCards);
+		}
+		else {
+			assert false;
 		}
 	}
 
@@ -108,21 +131,26 @@ public class Player {
 	 */
 	public void tellYourPlay(Card play, int playIndex, int drawIndex, boolean drawSucceeded,
 							 boolean wasLegalPlay, Board boardState) {
-		// If you played a card, update knowledge
 		if (play != null) {
 			if (wasLegalPlay) {
 				// If you played a card legally, update knowledge
-				knowledge.eliminateCard(play);
+				for (CardKnowledge knowledge : ourDeckKnowledge) {
+					knowledge.eliminateCard(play);
+					ourImpossibleCards.add(play);
+				}
 			} else {
 				// If you played a card illegally, it must have been discarded
-				knowledge.eliminateCard(play);
 			}
+			this.removeCardAndUpdateImpossible(boardState, play, ourDeckKnowledge, ourImpossibleCards);
+
 		}
 		// If you drew a card, update knowledge
 		if (drawSucceeded) {
 			// If you drew a card, add it to knowledge
-			//knowledge.eliminateCard(boardState.discards.get(boardState.discards.size() - 1));
-			knowledge.eliminateCard(play);
+			ourDeckKnowledge[playIndex] = new CardKnowledge(ourImpossibleCards);
+		}
+		else {
+			assert false;
 		}
 	}
 
@@ -136,7 +164,7 @@ public class Player {
 	public void tellColorHint(int color, ArrayList<Integer> indices, Hand partnerHand, Board boardState) {
 		// If partner provided a color hint, update knowledge
 		for (Integer index : indices) {
-			knowledge.knowColor(color);
+			ourDeckKnowledge[index].knowColor(color);
 		}
 	}
 
@@ -150,7 +178,7 @@ public class Player {
 	public void tellNumberHint(int number, ArrayList<Integer> indices, Hand partnerHand, Board boardState) {
 		// If partner provided a number hint, update knowledge
 		for (Integer index : indices) {
-			knowledge.knowValue(number);
+			ourDeckKnowledge[index].knowValue(number);
 		}
 	}
 
@@ -175,9 +203,8 @@ public class Player {
 	 *     his cards have that color, or if no hints remain. This command consumes a hint.
 	 *
 	 * Andy's Ideas for what we should do
-	 * + discard from the right
-	 * + if there are any 1's at the beginning, hint at the color
-	 *   - if at the beginning, just play color hinted cards if only one
+	 * + need to have proper card tracking stuff
+	 *   - we need to add items
 	 * + only hint if card is valuable
 	 *   - try to choose color or number based on what is avaliable
 	 *   - don't care the cards at the beginning unless there is only one
@@ -186,64 +213,181 @@ public class Player {
 	public String ask(int yourHandSize, Hand partnerHand, Board boardState) {
 		//If this is the start of the game and none of the hints have been used, check to see if there are any fives in your partner's hands and hint them to him
 		double precentage_of_non_empty_spaces = getPercentageOfNonEmptySpaces(boardState);
+
 		// beginning of the game
-		if (precentage_of_non_empty_spaces < .5) {
-			boolean will_number_hint = false;
-			ArrayList<Integer> number_hint_indices = new ArrayList<Integer>();
+		if (precentage_of_non_empty_spaces < 1) {
+			String result = this.hintDiscard(partnerHand, boardState, 1);
+			if (result != null) {return result;}
 
-			for (int i = 0; i < partnerHand.size(); i++) {
-				Card card = partnerHand.get(i);
-				// checking to see if it is a 1, no other color matches, and hint hasn't been given before
-				if (card.value == 1 && countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) {
-					hasColorHinted[i] = true; // this card has been hinted at
-					return "COLORHINT " + card.color;
-				}
-				// will do a number hint; doesn't make sense if already done
-				else if (card.value == 1 && !hasNumberHinted[i]) {
-					will_number_hint = true;
-					number_hint_indices.add(i);
-				}
-			}
-			// hint all 1's and add them to the number hinted array
-			if (will_number_hint) {
-				for (int index : number_hint_indices) {
-					hasNumberHinted[index] = true;
-				}
+			result = this.play(boardState, 1);
+			if (result != null) {return result;}
 
-				return "NUMBERHINT 1";
-			}
-			// discard the rightmost card
-			// probably wrong syntax
-			else {
-				return "DISCARD 4 4";
-			}
+			result = this.hint(partnerHand, boardState, 1);
+			if (result != null) {return result;}
+
 		}
+		assert false;
 
 		if (boardState.numHints == 8){
 			for (int i = 0;i < partnerHand.size();i++){
 				if (partnerHand.get(i).value == 5){
-					return "NUMBERHINT 5";
+					//return "NUMBERHINT 5";
 				}
 			}
 		}
-		for (int i = 0;i < yourHandSize;i++){
-			if (knowledge.getValue(myHand.get(i)) ==  5){
-				return "DISCARD " + i + " " + i;
-			}
+		for (int i = 0; i < yourHandSize; i++){
+			// if (knowledge.getValue(myHand.get(i)) ==  5){
+			// 	return "DISCARD " + i + " " + i;
+			// }
 		}
+
 		return "DISCARD 0 0"; // Discard the first card in hand
 	}
 
-    public double getPercentageOfNonEmptySpaces(Board boardState) {
-        int number_of_non_empty_spaces = 0;
-        for (Integer card : boardState.tableau) {
-            if (card > 0) {
-                number_of_non_empty_spaces++;
-            }
-        }
+	public String hintDiscard(Hand partnerHand, Board boardState, int importantValue) {
+		int discardIndex = this.getPartnerDiscardIndex();
+		Card rightmostCard = partnerHand.get(discardIndex);
+		boolean rightmostCardIsImportant = this.cardIsImportant(boardState,
+																rightmostCard,
+																false);
+		if (rightmostCard.value == importantValue || rightmostCardIsImportant) {
+			// check if the left card has more priority
+			if (discardIndex > 0) { // valid left card
+				Card leftCard = partnerHand.get(discardIndex - 1);
+				boolean leftCardIsImportant = this.cardIsImportant(boardState,
+																leftCard,
+																false);
+				int importantIndex = -1;
+				Card importantCard = null;
+				if (rightmostCardIsImportant) {
+					if (rightmostCard.value >= leftCard.value ||
+						(rightmostCardIsImportant && !leftCardIsImportant)) {
+						importantIndex = discardIndex;
+						importantCard = rightmostCard;
+					}
+					else {
+						importantIndex = discardIndex - 1;
+						importantCard = leftCard;
+					}
 
-        return (double)number_of_non_empty_spaces/(double)boardState.tableau.size();
-    }
+					// use a number hint unless it is immediately playable
+					if (this.cardIsImmediatelyPlayable(leftCard, boardState)){
+						this.hasColorHinted[importantIndex] = true;
+						return "COLORHINT " + importantCard.color;
+					}
+					else {
+						this.hasNumberHinted[importantIndex] = true;
+						return "NUMBERHINT " + importantCard.value;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	public String play(Board boardState, int importantValue){
+		int num_color[] = new int[5];
+		Arrays.fill(num_color, -1);
+		for (int i = 0; i < 5; i++) { // searching for hint
+			int color = ourDeckKnowledge[i].getKnownColor();
+			int value = ourDeckKnowledge[i].getKnownValue();
+			// check to see if we know the color
+			if (ourDeckKnowledge[i].hasBeenHinted && color != -1) { // if color hint
+				if (num_color[color] != -2) { // unique color
+					if (num_color[color] != -1) {
+						num_color[color] = -2;
+					}
+					else {
+						num_color[color] = i;
+					}
+				}
+				// check to see if we know the number too
+				if (value == importantValue) {
+					Card card = new Card(color, value);
+					if (boardState.isLegalPlay(card)){
+						return "PLAY " + i + " " + i;
+					}
+					else {
+						return "DISCARD " + i + " " + i;
+					}
+				}
+			}
+		}
+		int card_index;
+		for (int i = 0; i < 5; i++) {
+			if ((card_index = num_color[i]) > -1) {
+				// check to see if the play is valid
+				if (ourDeckKnowledge[card_index].options
+					.contains(new Card(i, importantValue))) {
+					return "PLAY " + card_index + " " + card_index;
+				}
+			}
+		}
+		return null;
+	}
+
+	public String hint(Hand partnerHand, Board boardState, int importantValue) {
+		// Going to Use Color Hint
+		// the goal: ensure only there is only one card in the
+		// deck with one color
+		//
+		// this is indexed by the color
+		// if a card has not been here before (the item is -1),
+		//     it sets the item to its index in the deck
+		// if a card sees that another card has set its
+		//     index, then it knows that the entry is invalid
+		//     and sets it to a -2
+		// Going to Hint
+		boolean will_number_hint = false;
+		ArrayList<Integer> number_hint_indices = new ArrayList<Integer>();
+
+		for (int i = 0; i < partnerHand.size(); i++) {
+			Card card = partnerHand.get(i);
+			// checking to see if it is a 1, no other color matches, and hint hasn't been given before
+			if (card.value == importantValue &&
+				(countColorMatches(card, partnerHand) < 2 && !hasColorHinted[i]) || hasNumberHinted[i])  {
+				hasColorHinted[i] = true; // this card has been hinted at
+				return "COLORHINT " + card.color;
+			}
+			// will do a number hint; doesn't make sense if already done
+			else if (card.value == importantValue && !hasNumberHinted[i]) {
+				will_number_hint = true;
+				number_hint_indices.add(i);
+			}
+		}
+		// hint all 1's and add them to the number hinted array
+		if (will_number_hint && boardState.numHints >= 4) {
+			for (int index : number_hint_indices) {
+				hasNumberHinted[index] = true;
+			}
+
+			return "NUMBERHINT " + importantValue;
+		}
+		// discard the rightmost card
+		// probably wrong syntax
+		else {
+			for (int i = 4; i > -1; i--) {
+				if (!ourDeckKnowledge[i].hasBeenHinted) {
+					return "DISCARD " + i + " " + i;
+				}
+			}
+
+			// when reach end, need to determine most important
+			// card to keep
+		}
+		return null;
+	}
+
+	public double getPercentageOfNonEmptySpaces(Board boardState) {
+		int number_of_non_empty_spaces = 0;
+		for (Integer card : boardState.tableau) {
+			if (card > 0) {
+				number_of_non_empty_spaces++;
+			}
+		}
+
+		return (double)number_of_non_empty_spaces/(double)boardState.tableau.size();
+	}
 
 	public int countColorMatches(Card card, Hand hand) {
 		int matches = 0;
@@ -267,4 +411,92 @@ public class Player {
 		return matches;
 	}
 
+	public int discardMatches (Board boardState, Card card) {
+		int matches = 0;
+		for (Card discard : boardState.discards) {
+			if (discard == card) {
+				matches++;
+			}
+		}
+		return matches;
+	}
+
+	// call this method when you remove a card.
+	//
+	// It handles removing the card if all the cards in the
+	// group are known
+	public void removeCardAndUpdateImpossible(Board boardState, Card card,
+											  CardKnowledge knowledge[],
+											  Set<Card> impossibleCards) {
+		int[] avaliable_cards = { 3, 2, 2, 2, 1 };
+		int matches = discardMatches(boardState, card);
+		if (matches > avaliable_cards[card.value - 1]) { // TODO fix
+			for (CardKnowledge know : knowledge) { // inefficent, but works
+				know.eliminateCard(card);
+			}
+			impossibleCards.add(card);
+		}
+	}
+
+	public boolean cardIsImportant(Board boardState, Card card, boolean careAboutFives) {
+		if (card.value == 5 && !careAboutFives) {
+			return false;
+		}
+
+		int[] avaliable_cards = { 3, 2, 2, 2, 1 };
+		int matches = discardMatches(boardState, card);
+		if (matches == (avaliable_cards[card.value - 1] - 1)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public int getPartnerDiscardIndex() {
+		for (int i = 4; i > -1; i--) {
+			if (!this.hasColorHinted[i] && !this.hasColorHinted[i]){
+				return i;
+			}
+		}
+
+		assert false; // TODO implement this later
+		return 0;
+	}
+
+	public int getDiscardIndex(CardKnowledge knowledge[]) {
+		for (int i = 4; i > -1; i--) {
+			if (!knowledge[i].hasBeenHinted) {
+				return i;
+			}
+		}
+		assert false; // TODO implement this later
+		return 0;
+	}
+
+	public boolean cardIsImmediatelyPlayable(Card card, Board boardState) {
+		int currentPlayedCard = boardState.tableau.get(card.color);
+		return currentPlayedCard + 1 == card.value;
+	}
+
+	// if colorhint: supply color number to hintIdentifier
+	// if numberhint: supply number to hintIdentifier
+	public boolean shouldHint(Board boardState, Hand partnerHand,
+							  int hintIdentifier, boolean isColorHint) {
+		int discardIndex = this.getPartnerDiscardIndex();
+		for (int index = discardIndex; index > -1; index--) {
+			Card toCheck = partnerHand.get(index);
+			boolean cardIsNotSameAsHint =
+				(isColorHint) ?(toCheck.color != hintIdentifier)
+				              :(toCheck.value != hintIdentifier);
+			// ensure multiple hints don't end on an important card
+			// this should run on the new discardIndex
+			if (cardIsNotSameAsHint) {
+				if (this.cardIsImportant(boardState, toCheck, false)){
+					return false;
+				}
+				return true;
+			}
+		}
+		return true;
+	}
 }
